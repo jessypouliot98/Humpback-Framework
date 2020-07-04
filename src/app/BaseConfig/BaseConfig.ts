@@ -64,6 +64,13 @@ class BaseConfig {
 		}
 	}
 
+	static get mode(): any {
+		return {
+			ENV: 'dev',
+			DEBUG: true
+		}
+	}
+
 }
 
 export default BaseConfig

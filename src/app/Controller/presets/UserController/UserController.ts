@@ -1,9 +1,10 @@
 import Controller from '../../Controller'
+import Request from '../../../Request/Request'
 
 class UserController extends Controller {
 
 	public async store(): Promise<any> {
-		console.log(this.request);
+		console.log(Request.current);
 		return 'Hello World';
 	}
 

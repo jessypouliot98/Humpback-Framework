@@ -4,20 +4,19 @@ import Auth from '../src/app/Auth/Auth'
 import User from '../src/app/Model/presets/User/User'
 import Route from '../src/app/Route/Route'
 import UserController from '../src/app/Controller/presets/UserController/UserController'
+import Humpback from '../src/app/Humpback/Humpback'
 
-import express from 'express'
-const app = express();
-const port = 8080; // default port to listen
+const app = Humpback.start();
 
-// start the Express server
-app.listen( port, () => {
-	console.log( `server started at http://localhost:${ port }` );
-} );
-
-app.use(
+app.attachRoutes([
 	Route.prefix('/api/v1', [
 		Route.get('', [UserController, 'store']),
 		Route.get('/test', () => 'hello world'),
 		Route.get('/bob', () => 'hello bob')
-	])
-)
+	]),
+	Route.prefix('/api/v2', [
+		Route.get('', [UserController, 'store']),
+		Route.get('/test', () => 'hello world'),
+		Route.get('/bob', () => 'v2 hello bob')
+	]),
+])

@@ -1,4 +1,6 @@
 import express from 'express'
+import Request from '../Request/Request'
+import NoSuchMethodException from '../../exception/NoSuchMethodException/NoSuchMethodException'
 
 class Route {
 
@@ -6,17 +8,33 @@ class Route {
 
 	protected serve(method: string, route: string, delegate: any): any {
 		return this.router[method](route, async (req: any, res: any) => {
-			let data: any;
+			Request.set(req, res);
+			try{
+				let data: any;
 
-			if( Array.isArray(delegate) && delegate.length === 2 ){
-				const [controller, func] = delegate;
-				data = await new controller()[func](req);
-			}
-			else if( typeof delegate === 'function' ){
-				data = await delegate(req);
-			}
+				if( Array.isArray(delegate) && delegate.length === 2 ){
 
-			res.send(data);
+					const [controller, func] = delegate;
+					const conrollerInstance = new controller();
+
+					if( typeof conrollerInstance[func] !== 'function' ) {
+						throw NoSuchMethodException.routeDelegate();
+					}
+
+					data = await conrollerInstance[func](req);
+				} else if( typeof delegate === 'function' ){
+
+					data = await delegate(req);
+				} else {
+
+					throw NoSuchMethodException.routeDelegate();
+				}
+
+				res.send(data);
+			} catch(e){
+				console.error(e)
+				res.send(e);
+			}
 		})
 	}
 
