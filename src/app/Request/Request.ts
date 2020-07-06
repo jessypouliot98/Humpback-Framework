@@ -1,4 +1,5 @@
 import Humpback from '../Humpback/Humpback'
+import Collection from '../../entities/Collection/Collection'
 
 class Request {
 
@@ -34,6 +35,32 @@ class Request {
 
 	public get bearerToken(): string|null {
 		return this.headers.bearer || null;
+	}
+
+	// Resolve
+
+	public resolve(mode: string, data: any): void {
+		if( data instanceof Collection ){
+			data = data.entries;
+		}
+
+		this._resolve[mode](data);
+	}
+
+	public send(data: any): void {
+		this.resolve('send', data);
+	}
+
+	public static send(data: any): void {
+		Request.current.send(data);
+	}
+
+	public json(data: any): void {
+		this.resolve('json', data);
+	}
+
+	public static json(data: any): void {
+		Request.current.json(data);
 	}
 
 }

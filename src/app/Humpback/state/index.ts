@@ -1,7 +1,9 @@
 import httpState from './httpState'
+import dbState from './dbState'
 
 const state = {
-	http: httpState
+	http: httpState,
+	db: dbState,
 }
 
 export default state

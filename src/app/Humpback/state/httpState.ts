@@ -1,9 +1,11 @@
 import Request from '../../Request/Request'
 
-class HttpState {
-
-	public static request: Request|null = null;
-
+export type httpState = {
+	request: Request|null,
 }
 
-export default HttpState
+const state: httpState = {
+	request: null,
+}
+
+export default state

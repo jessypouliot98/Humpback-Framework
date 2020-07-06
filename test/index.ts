@@ -10,13 +10,7 @@ const app = Humpback.start();
 
 app.attachRoutes([
 	Route.prefix('/api/v1', [
-		Route.get('', [UserController, 'store']),
-		Route.get('/test', () => 'hello world'),
-		Route.get('/bob', () => 'hello bob')
-	]),
-	Route.prefix('/api/v2', [
-		Route.get('', [UserController, 'store']),
-		Route.get('/test', () => 'hello world'),
-		Route.get('/bob', () => 'v2 hello bob')
+		Route.get('/user', [UserController, 'index']),
+		Route.get('/user/:id', [UserController, 'show']),
 	]),
 ])

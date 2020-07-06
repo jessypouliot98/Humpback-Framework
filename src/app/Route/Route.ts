@@ -13,7 +13,6 @@ class Route {
 				let data: any;
 
 				if( Array.isArray(delegate) && delegate.length === 2 ){
-
 					const [controller, func] = delegate;
 					const conrollerInstance = new controller();
 
@@ -22,24 +21,34 @@ class Route {
 					}
 
 					data = await conrollerInstance[func](req);
-				} else if( typeof delegate === 'function' ){
-
+				}
+				else if( typeof delegate === 'function' ){
 					data = await delegate(req);
-				} else {
-
+				}
+				else {
 					throw NoSuchMethodException.routeDelegate();
 				}
 
-				res.send(data);
+				Request.send(data);
 			} catch(e){
 				console.error(e)
-				res.send(e);
+				Request.send(e);
 			}
 		})
 	}
 
-	protected use(delegate: any): any {
-		return this.router.use(delegate);
+	protected use(a: any, b: any): any {
+		if( b ){
+			const route: string|string[] = a;
+			const delegate: any = b;
+
+			return this.router.use(route, delegate);
+		}
+		else {
+			const delegate: any = a;
+
+			return this.router.use(delegate);
+		}
 	}
 
 	protected group(route: string, delegate: Function): any {
@@ -91,16 +100,15 @@ class Route {
 	}
 
 	public static prefix(route: string, delegate: any): any {
-		console.log(0, this)
 		return new this().group(route, delegate);
 	}
 
-	public middleware(delegate: any): any {
-		return this.use(delegate);
+	public middleware(a: any, b: any): any {
+		return this.use(a, b);
 	}
 
-	public static middleware(delegate: any): any {
-		return new this().use(delegate);
+	public static middleware(a: any, b: any): any {
+		return new this().use(a, b);
 	}
 
 }

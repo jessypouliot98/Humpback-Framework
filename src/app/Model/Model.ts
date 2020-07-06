@@ -1,14 +1,11 @@
 import Collection from '../../entities/Collection/Collection'
 import Query from '../Query/Query'
+import DatabaseException from '../../exception/DatabaseException/DatabaseException'
 import { whereArgs } from '../Query/types'
 
 class Model {
 
-	protected query?: Query;
-
-	protected init(): void {
-		this.query = new Query(this);
-	}
+	protected _query: Query|null = null;
 
 	// Config
 
@@ -45,6 +42,23 @@ class Model {
 
 	public static dispatchesEvents = {};
 
+	// Initialiser
+
+	constructor(){
+		Object.defineProperty(this, '_query', {
+			enumerable: false,
+			value: new Query(this),
+		})
+	}
+
+	// Get
+
+	protected get query(): Query {
+		if(this._query === null)
+			throw DatabaseException.notInitialized();
+
+		return (this._query as Query);
+	}
 
 	// Query State
 
@@ -52,10 +66,18 @@ class Model {
 		this.query?.setWhere(arg);
 	}
 
+	protected setQueryQuantity(qty: number): void {
+		this.query?.setQuantity(qty);
+	}
+
 	// Select
 
 	public all(): this {
 		return this;
+	}
+
+	public static all() {
+		return new this().all();
 	}
 
 	public where(a: string, b: string|number, c?: string|number): this {
@@ -69,6 +91,18 @@ class Model {
 		this.setQueryWhere({ field, condition, value });
 
 		return this;
+	}
+
+	public static where(a: string, b: string|number, c?: string|number) {
+		return new this().where(a, b, c);
+	}
+
+	public async find(id: string|number): Promise<Collection> {
+		return this.where('_id', '=', id).limit(1).get();
+	}
+
+	public static async find(id: string|number): Promise<Collection> {
+		return new this().find(id);
 	}
 
 	// Order
@@ -88,7 +122,7 @@ class Model {
 	// Quantity
 
 	public limit(qty: number = 5): this {
-		// TODO
+		this.setQueryQuantity(qty);
 
 		return this;
 	}
@@ -114,7 +148,7 @@ class Model {
 	// Query
 
 	public async get(): Promise<Collection> {
-		return new Collection(this, { hello: 'world', something: 'cool' });
+		return this.query.get();
 	}
 
 	public async create(): Promise<Collection> {
