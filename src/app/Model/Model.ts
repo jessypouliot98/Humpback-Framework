@@ -70,6 +70,18 @@ class Model {
 		this.query?.setQuantity(qty);
 	}
 
+	protected setQueryWith(relation: string): void {
+		this.query?.setWith(relation);
+	}
+
+	// Relations
+
+	public hasOne(model: any, localField: string, otherField: string) {
+		return async() => {
+			return 'TODO';
+		}
+	}
+
 	// Select
 
 	public all(): this {
@@ -98,7 +110,7 @@ class Model {
 	}
 
 	public async find(id: string|number): Promise<Collection> {
-		return this.where('_id', '=', id).limit(1).get();
+		return this.where('_id', '=', id).first();
 	}
 
 	public static async find(id: string|number): Promise<Collection> {
@@ -135,19 +147,23 @@ class Model {
 
 	// Relation
 
-	public with(relations: any): this {
-		if( !Array.isArray(relations) ) relations = [relations];
+	public with(relation: string|string[]): this {
+		const relations = !Array.isArray(relation) ? [relation] : relation
 
-		relations.forEach((relation: any) => {
-			// TODO
-		})
+		relations.forEach((relation) => {
+			this.setQueryWith(relation);
+		});
 
 		return this;
 	}
 
 	// Query
 
-	public async get(): Promise<Collection> {
+	public async first(): Promise<Collection> {
+		return this.query.first();
+	}
+
+	public async get(): Promise<Collection[]> {
 		return this.query.get();
 	}
 

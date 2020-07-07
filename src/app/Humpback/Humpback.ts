@@ -1,5 +1,5 @@
 import express from 'express'
-import Route from '../../app/Route/Route'
+import Route from '../../app/Http/Route/Route'
 import BaseConfig from '../../app/BaseConfig/BaseConfig'
 import state from './state'
 import 'colors'
@@ -13,7 +13,7 @@ class Humpback {
 	}
 
 	public static start(){
-		return new Humpback();
+		return new this();
 	}
 
 	public static get state() {

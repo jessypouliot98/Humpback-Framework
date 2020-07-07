@@ -7,7 +7,7 @@ const env = process.env;
 
 class BaseConfig {
 
-	static get app(): any {
+	public static get app() {
 		const APP_HOST = env.APP_HOST || '127.0.0.1';
 		const APP_PORT = env.APP_PORT || '8000';
 
@@ -20,7 +20,7 @@ class BaseConfig {
 		}
 	}
 
-	static get path(): any {
+	public static get path() {
 		const getPath = (p: string) => path.join( process.cwd(), p );
 
 		const PUBLIC_URL = env.PUBLIC_PATH || '/public';
@@ -35,7 +35,7 @@ class BaseConfig {
 		};
 	}
 
-	static get db(): any {
+	public static get db() {
 		return {
 			DB_DRIVER: env.DB_DRIVER || 'mongodb',
 			DB_HOST: env.DB_HOST || '127.0.0.1',
@@ -46,7 +46,7 @@ class BaseConfig {
 		}
 	}
 
-	static get mail(): any {
+	public static get mail() {
 		return {
 			MAIL_DRIVER: env.MAIL_DRIVER || 'smtp',
 			MAIL_HOST: env.MAIL_HOST || '',
@@ -57,14 +57,14 @@ class BaseConfig {
 		}
 	}
 
-	static get storage(): any {
+	public static get storage() {
 		return {
 			STORAGE_DISK: env.STORAGE_DISK || 'local',
 			STORAGE_MAX_UPLOAD_SIZE: env.STORAGE_MAX_UPLOAD_SIZE || 2024,
 		}
 	}
 
-	static get mode(): any {
+	public static get mode() {
 		return {
 			ENV: 'dev',
 			DEBUG: true

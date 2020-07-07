@@ -1,9 +1,19 @@
-import httpState from './httpState'
-import dbState from './dbState'
+import Request from '../../Http/Request/Request'
 
-const state = {
-	http: httpState,
-	db: dbState,
+const state: {
+	http: {
+		request: Request|null
+	},
+	db: {
+		connection: any|null
+	}
+} = {
+	http: {
+		request: null
+	},
+	db: {
+		connection: null,
+	},
 }
 
 export default state

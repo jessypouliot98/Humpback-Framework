@@ -11,7 +11,8 @@ export type queryState = {
 	where: whereArgs|null,
 	order: any|null,
 	quantity: number|null,
-	page: number|null
+	page: number|null,
+	with: string[],
 }
 
 class Query {
@@ -26,6 +27,7 @@ class Query {
 		order: null,
 		quantity: null,
 		page: null,
+		with: [],
 	}
 
 	constructor(model: Model){
@@ -58,11 +60,28 @@ class Query {
 		this.state.quantity = qty;
 	}
 
-	public async get(){
+	public setWith(relation: string): void {
+		this.state.with.push(relation);
+
+		this._model[relation]()().then(console.log)
+	}
+
+	// public setWith(with: string): void {
+	// 	this.state.with.push(with);
+	// }
+
+	public async first(){
 		await this.connect();
-		const data = await this.db.get(this.state);
+		const data = await this.db.first(this.state);
 
 		return new Collection(this._model, data);
+	}
+
+	public async get(){
+		await this.connect();
+		const aData = await this.db.get(this.state);
+
+		return aData.map(data => new Collection(this._model, data));
 	}
 
 }

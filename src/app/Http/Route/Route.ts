@@ -1,6 +1,6 @@
 import express from 'express'
 import Request from '../Request/Request'
-import NoSuchMethodException from '../../exception/NoSuchMethodException/NoSuchMethodException'
+import NoSuchMethodException from '../../../exception/NoSuchMethodException/NoSuchMethodException'
 
 class Route {
 

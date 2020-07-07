@@ -1,8 +1,7 @@
-// import State from '../app/Humpback/State'
-// import { dd } from '../bootstrap/helpers'
+import state from '../app/Humpback/state'
 
 declare module NodeJS  {
 	interface Global {
-		__HUMPBACK__: any,
+		__HUMPBACK__: { state: state },
 	}
 }

@@ -1,5 +1,5 @@
-import Humpback from '../Humpback/Humpback'
-import Collection from '../../entities/Collection/Collection'
+import Humpback from '../../Humpback/Humpback'
+import Collection from '../../../entities/Collection/Collection'
 
 class Request {
 
@@ -34,7 +34,7 @@ class Request {
 	}
 
 	public get bearerToken(): string|null {
-		return this.headers.bearer || null;
+		return this.headers?.authorization || null;
 	}
 
 	// Resolve
@@ -42,6 +42,8 @@ class Request {
 	public resolve(mode: string, data: any): void {
 		if( data instanceof Collection ){
 			data = data.entries;
+		} else if( Array.isArray(data) && data.every(d => d instanceof Collection) ){
+			data = data.map(d => d.entries);
 		}
 
 		this._resolve[mode](data);

@@ -14,12 +14,12 @@ class Collection {
 		Object.defineProperty(this, '_id', { enumerable: false, value: data?._id });
 	}
 
-	public get id(): string|number {
+	public get id(): string {
 		if( this._id == undefined ) {
 			throw new Error('TODO')
 		}
 
-		return this._id;
+		return this._id.toString();
 	}
 
 	public async delete(): Promise<Collection> {

@@ -43,7 +43,7 @@ class MongoDB {
 	protected parseQueryState(args: queryState): queryState {
 		const parsedArgs: any = Object.keys({...args}).reduce((acc, key) => {
 			let prop = args[key];
-			
+
 			if( prop === null ) return acc;
 
 			if(prop?.field === '_id'){
@@ -70,7 +70,24 @@ class MongoDB {
 		return (parsedArgs as queryState);
 	}
 
-	public async get(args: queryState) {
+	public async first(args: queryState): Promise<any> {
+		args = this.parseQueryState(args);
+
+		const collection = args.collection;
+		const where = args.where;
+
+		let query: any;
+
+		if( collection === null ){
+			throw NullException.noValueFor('collection', 'string');
+		}
+
+		query = this._db.collection( collection );
+
+		return await query.findOne( where );
+	}
+
+	public async get(args: queryState): Promise<any[]> {
 		args = this.parseQueryState(args);
 
 		const collection = args.collection;
@@ -87,29 +104,21 @@ class MongoDB {
 
 		query = this._db.collection( collection );
 
-		if( quantity === 1 ){
-			query = await query.findOne( where );
-			console.log(query);
-		}
-		else {
-			query = await query.find( where );
+		query = await query.find( where );
 
-			if( quantity ){
+		if( quantity ){
 
-				if( quantity >= 2 ) query = await query.limit( quantity );
+			if( quantity >= 2 ) query = await query.limit( quantity );
 
-				if( page ){
-					if( page >= 2 && quantity >= 2 ) query = await query.skip( (page - 1) * quantity );
-				}
-
+			if( page ){
+				if( page >= 2 && quantity >= 2 ) query = await query.skip( (page - 1) * quantity );
 			}
 
-			if( order ) query = await query.sort( order );
-
-			query = await query.toArray();
 		}
 
-		return query;
+		if( order ) query = await query.sort( order );
+
+		return await query.toArray();
 	}
 
 }
