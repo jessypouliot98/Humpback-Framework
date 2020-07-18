@@ -1,7 +1,7 @@
 import express from 'express'
-import Route from '../../app/Http/Route/Route'
-import BaseConfig from '../../app/BaseConfig/BaseConfig'
-import state from './state'
+import Route from '../../App/Http/Route/Route'
+import BaseConfig from '../../App/BaseConfig/BaseConfig'
+import state from './State'
 import 'colors'
 
 class Humpback {

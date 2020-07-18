@@ -2,7 +2,9 @@
 	"name": "humpback",
 	"version": "1.0.0",
 	"description": "A modern TypeScript server framework",
-	"main": "dist",
+	"main": "lib",
+	"module": "lib",
+	"types": "lib"
 	"scripts": {
 		"start": "ts-node ./test/index.ts",
 		"dev": "tsc --watch",
@@ -12,22 +14,22 @@
 	"license": "ISC",
 	"devDependencies": {
 		"@types/dotenv": "^8.2.0",
-		"@types/express": "^4.17.6",
+		"@types/express": "^4.17.7",
 		"@types/jsonwebtoken": "^8.5.0",
 		"@types/mongodb": "^3.5.25",
-		"@types/node": "^14.0.14",
+		"@types/node": "^14.0.23",
 		"@types/swig": "0.0.29",
 		"colors": "^1.4.0",
 		"crypto": "^1.0.1",
 		"dotenv": "^8.2.0",
 		"express": "^4.17.1",
-		"inquirer": "^7.3.0",
+		"inquirer": "^7.3.2",
 		"jsonwebtoken": "^8.5.1",
 		"mongodb": "^3.5.9",
 		"nodemailer": "^6.4.10",
 		"slugify": "^1.4.4",
 		"swig": "^1.4.2",
 		"ts-node": "^8.10.2",
-		"typescript": "^3.9.6"
+		"typescript": "^3.9.7"
 	}
 }

@@ -1,5 +1,5 @@
 import { MongoClient, ObjectID, Db } from 'mongodb'
-import NullException from '../../../../exception/NullException/NullException'
+import NullException from '../../../../Exception/NullException/NullException'
 import { queryState } from '../../Query'
 import { connectionArgs } from '../../types'
 

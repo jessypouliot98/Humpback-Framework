@@ -3,7 +3,7 @@ import Request from '../../Request/Request'
 import Middleware from '../Middleware'
 import BaseConfig from '../../../BaseConfig/BaseConfig'
 import Jwt from 'jsonwebtoken'
-import Collection from '../../../../entities/Collection/Collection'
+import Collection from '../../../../Entities/Collection/Collection'
 
 class Auth extends Middleware {
 

@@ -1,6 +1,6 @@
-import Collection from '../../entities/Collection/Collection'
+import Collection from '../../Entities/Collection/Collection'
 import Query from '../Query/Query'
-import DatabaseException from '../../exception/DatabaseException/DatabaseException'
+import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
 import { whereArgs } from '../Query/types'
 
 class Model {

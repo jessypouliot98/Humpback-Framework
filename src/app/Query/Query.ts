@@ -1,9 +1,9 @@
 import Humpback from '../Humpback/Humpback'
-import Collection from '../../entities/Collection/Collection'
+import Collection from '../../Entities/Collection/Collection'
 import BaseConfig from '../BaseConfig/BaseConfig'
-import MongoDB from './drivers/MongoDB/MongoDB'
+import MongoDB from './Drivers/MongoDB/MongoDB'
 import Model from '../Model/Model'
-import DatabaseException from '../../exception/DatabaseException/DatabaseException'
+import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
 import { whereArgs } from './types'
 
 export type queryState = {

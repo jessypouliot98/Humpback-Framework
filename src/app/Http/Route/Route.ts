@@ -1,6 +1,6 @@
 import express from 'express'
 import Request from '../Request/Request'
-import NoSuchMethodException from '../../../exception/NoSuchMethodException/NoSuchMethodException'
+import NoSuchMethodException from '../../../Exception/NoSuchMethodException/NoSuchMethodException'
 
 class Route {
 
@@ -14,6 +14,7 @@ class Route {
 
 				if( Array.isArray(delegate) && delegate.length === 2 ){
 					const [controller, func] = delegate;
+
 					const conrollerInstance = new controller();
 
 					if( typeof conrollerInstance[func] !== 'function' ) {

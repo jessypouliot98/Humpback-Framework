@@ -1,5 +1,5 @@
 import Humpback from '../../Humpback/Humpback'
-import Collection from '../../../entities/Collection/Collection'
+import Collection from '../../../Entities/Collection/Collection'
 
 class Request {
 

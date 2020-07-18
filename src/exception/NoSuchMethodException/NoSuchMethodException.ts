@@ -1,4 +1,4 @@
-import Exception from '../Exception/Exception'
+import Exception from '../Exception'
 
 class NoSuchMethodException extends Exception {
 

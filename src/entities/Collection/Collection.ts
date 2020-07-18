@@ -1,4 +1,4 @@
-import Model from '../../app/Model/Model'
+import Model from '../../App/Model/Model'
 
 class Collection {
 

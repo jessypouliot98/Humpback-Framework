@@ -1,4 +1,4 @@
-import state from '../app/Humpback/state'
+import state from '../App/Humpback/State'
 
 declare module NodeJS  {
 	interface Global {
