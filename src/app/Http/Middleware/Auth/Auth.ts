@@ -1,17 +1,16 @@
-import User from '../../../Model/User/User'
+import Model, { User } from '../../../Model'
 import Request from '../../Request/Request'
 import Middleware from '../Middleware'
 import Config from '../../../Config/Config'
 import Jwt from 'jsonwebtoken'
-import Collection from '../../../../Entities/Collection/Collection'
 
 class Auth extends Middleware {
 
-	public static createToken(user: Collection): string {
+	public static createToken(user: Model): string {
 		const payload = {
-			_id: user.id,
-			_name: user.entries.name,
-			_email: user.entries.email,
+			_id: (user as any).id,
+			_name: (user as any).name,
+			_email: (user as any).email,
 		};
 
 		return Jwt.sign(payload, Config.app.APP_KEY);
@@ -40,13 +39,13 @@ class Auth extends Middleware {
 	*
 	*	@return Collection|null - Authenticated user
 	*/
-	public static async user(token?: string): Promise<Collection|null> {
+	public static async user(token?: string): Promise<Model|null> {
 		const parsedToken = Auth.parseToken(token) as any;
 		if( !parsedToken && !parsedToken._email ) return null;
 
 		const user = await User.where('email', '=', parsedToken._email).first();
 
-		return user.entries ? user : null;
+		return user;
 	}
 
 	// Middlewares

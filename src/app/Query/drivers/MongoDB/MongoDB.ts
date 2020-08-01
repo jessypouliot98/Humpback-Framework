@@ -74,7 +74,7 @@ class MongoDB {
 		args = this.parseQueryState(args);
 
 		const collection = args.collection;
-		const where = args.where;
+		// const where = args.where;
 
 		let query: any;
 
@@ -84,17 +84,17 @@ class MongoDB {
 
 		query = this._db.collection( collection );
 
-		return await query.findOne( where );
+		return await query.findOne( /* where */ );
 	}
 
 	public async get(args: queryState): Promise<any[]> {
 		args = this.parseQueryState(args);
 
 		const collection = args.collection;
-		const where = args.where;
-		const quantity = args.quantity;
-		const page = args.page;
-		const order = args.order;
+		// const where = args.where;
+		// const quantity = args.quantity;
+		// const page = args.page;
+		// const order = args.order;
 
 		let query: any;
 
@@ -104,19 +104,19 @@ class MongoDB {
 
 		query = this._db.collection( collection );
 
-		query = await query.find( where );
+		query = await query.find( /* where */ );
 
-		if( quantity ){
+		// if( quantity ){
+		//
+		// 	if( quantity >= 2 ) query = await query.limit( quantity );
+		//
+		// 	if( page ){
+		// 		if( page >= 2 && quantity >= 2 ) query = await query.skip( (page - 1) * quantity );
+		// 	}
+		//
+		// }
 
-			if( quantity >= 2 ) query = await query.limit( quantity );
-
-			if( page ){
-				if( page >= 2 && quantity >= 2 ) query = await query.skip( (page - 1) * quantity );
-			}
-
-		}
-
-		if( order ) query = await query.sort( order );
+		// if( order ) query = await query.sort( order );
 
 		return await query.toArray();
 	}

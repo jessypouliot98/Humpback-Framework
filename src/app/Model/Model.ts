@@ -1,91 +1,73 @@
+import BaseModel from './BaseModel'
 import Collection from '../../Entities/Collection/Collection'
-import Query from '../Query/Query'
+import Db, { DBState } from './Db/Db'
 import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
-import { whereArgs } from '../Query/types'
 
-class Model {
+class Model extends BaseModel {
 
-	protected _query: Query|null = null;
+	protected _db: Db|null = null;
+	protected _entries: any = null;
 
-	// Config
+	constructor(values?: object){
+		super();
 
-	public static collection: string;
-
-	public static columns: object;
-
-	public static useTimestamps = true;
-
-	public static useSoftDeletes = true;
-
-	public static get allColumns() {
-		const timestampColumns = this.useTimestamps ? {
-			created_at: String,
-			updated_at: String,
-		} : undefined;
-
-		const deleteColumns = this.useSoftDeletes ? {
-			deleted_at: String,
-		} : undefined;
-
-		return {
-			...this.columns,
-			...timestampColumns,
-			...deleteColumns
-		}
-	}
-
-	public static guarded: string[] = [];
-
-	public static hidden: string[] = [];
-
-	public static cascadeDeletes: string[] = [];
-
-	public static dispatchesEvents = {};
-
-	// Get
-
-	protected get query(): Query {
-		if (this._query === null) {
-			Object.defineProperty(this, '_query', {
-				enumerable: false,
-				value: new Query(this),
-			})
+		if (!values) {
+			return;
 		}
 
-		return (this._query as Query);
+		this._entries = Object.keys(values).reduce<any>((key: string, acc: any) => {
+			if (key === '_id') {
+				key = 'id';
+			}
+
+			this[key] = values[key];
+			acc[key] = values[key];
+
+			return acc;
+		}, {});
 	}
 
-	// Query State
+	protected get db(): Db {
+		if (!this._db) {
+			this._db = Db.collection((this.constructor as any).collection);
+		}
 
-	protected setQueryWhere(arg: whereArgs): void {
-		this.query?.setWhere(arg);
+		return this._db;
 	}
 
-	protected setQueryQuantity(qty: number): void {
-		this.query?.setQuantity(qty);
-	}
+	// Helpers
 
-	protected setQueryWith(relation: string): void {
-		this.query?.setWith(relation);
+	protected generateModel(data: any): Model {
+		return new (this.constructor as any)(data);
 	}
 
 	// Relations
 
-	public hasOne(model: any, localField: string, otherField: string) {
+	public hasOne(model: BaseModel, localField: string, otherField: string) {
 		return async() => {
-			return 'TODO';
+			return (model as Model).where(otherField, '=', this[localField]).first();
+		}
+	}
+
+	public hasMany(model: BaseModel, localField: string, otherField: string) {
+		return async() => {
+			return (model as Model).where(otherField, '=', this[localField]).get();
+		}
+	}
+
+	public belongsTo(model: BaseModel, localField: string, otherField: string) {
+		return async() => {
+			return (model as Model).where(otherField, '=', this[localField]).first();
+		}
+	}
+
+	public belongsToMany(model: BaseModel, localField: string, otherField: string) {
+		return async() => {
+			return (model as Model).where(otherField, '=', this[localField]).get();
 		}
 	}
 
 	// Select
-
-	public all(): this {
-		return this;
-	}
-
-	public static all() {
-		return new this().all();
-	}
 
 	public where(a: string, b: string|number, c?: string|number): this {
 		let field: string,
@@ -95,21 +77,11 @@ class Model {
 		if( c ){ field = a; condition = (b as string); value = c; }
 		else { field = a; condition = '='; value = b; }
 
-		this.setQueryWhere({ field, condition, value });
-
 		return this;
 	}
 
 	public static where(a: string, b: string|number, c?: string|number) {
 		return new this().where(a, b, c);
-	}
-
-	public async find(id: string|number): Promise<Model> {
-		return await this.where('_id', '=', id).first() as Model;
-	}
-
-	public static async find(id: string|number): Promise<Model> {
-		return await new this().find(id);
 	}
 
 	// Order
@@ -129,13 +101,11 @@ class Model {
 	// Quantity
 
 	public limit(qty: number = 5): this {
-		this.setQueryQuantity(qty);
 
 		return this;
 	}
 
 	public page(nb: number = 1): this {
-		// TODO
 
 		return this;
 	}
@@ -146,7 +116,7 @@ class Model {
 		const relations = !Array.isArray(relation) ? [relation] : relation
 
 		relations.forEach((relation) => {
-			this.setQueryWith(relation);
+
 		});
 
 		return this;
@@ -154,33 +124,47 @@ class Model {
 
 	// Query
 
-	public async first(): Promise<Model|Collection> {
-		return this.query.first();
+	public async first(): Promise<Model|null> {
+		const data = await this.db.first();
+		return new (this.constructor as any)(data);
 	}
 
-	public async get(): Promise<Model|Collection> {
-		// return this.query.get();
-		return this;
+	public async get(): Promise<Collection|null> {
+		const data = await this.db.get();
+		return new Collection( ...data.map(this.generateModel) );
 	}
 
-	public async create(): Promise<Model|Collection> {
-		return this;
+	public async create(payload: DBState['payload']): Promise<any> {
+		return await this.db.create(payload);
 	}
 
-	public async update(): Promise<Model|Collection> {
-		return this;
+	public async update(payload: DBState['payload']): Promise<any> {
+		return await this.db.update(payload);
 	}
 
-	public async replace(): Promise<Model|Collection> {
-		return this;
+	public async delete(): Promise<any> {
+		return await this.db.update({ deletedAt: '0' });
 	}
 
-	public async delete(): Promise<Model|Collection> {
-		return this;
+	public async forceDelete(): Promise<any> {
+		return await this.db.delete();
 	}
 
-	public async forceDelete(): Promise<Model|Collection> {
-		return this;
+	public async all(): Promise<Collection|null> {
+		const data = await this.db.get();
+		return new Collection( ...data.map(this.generateModel) );
+	}
+
+	public static async all(): Promise<Collection|null> {
+		return await new this().all();
+	}
+
+	public async find(id: string|number): Promise<Model|null> {
+		return await this.where('id', '=', id).first();
+	}
+
+	public static async find(id: string|number): Promise<Model|null> {
+		return await new this().find(id);
 	}
 
 }

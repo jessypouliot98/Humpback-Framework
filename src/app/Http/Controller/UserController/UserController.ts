@@ -4,11 +4,11 @@ import User from '../../../Model/User/User'
 class UserController extends Controller {
 
 	public async index() {
-		return await new User().all().get();
+		return await User.all();
 	}
 
 	public async show({ params }) {
-		return await new User().find(params.id);
+		return await User.find(params.id);
 	}
 
 	public async store() {

@@ -4,11 +4,11 @@ import Post from '../../../Model/Post/Post'
 class PostController extends Controller {
 
 	public async index() {
-		return await new Post().all().with(['thumbnail']).get();
+		return await Post.all();
 	}
 
 	public async show({ params }) {
-		return await new Post().find(params.id);
+		return await Post.find(params.id);
 	}
 
 	public async store() {

@@ -4,7 +4,7 @@
 	"description": "A modern TypeScript server framework",
 	"main": "lib",
 	"module": "lib",
-	"types": "lib"
+	"types": "lib",
 	"scripts": {
 		"start": "ts-node ./test/index.ts",
 		"dev": "tsc --watch",

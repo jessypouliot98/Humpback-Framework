@@ -8,31 +8,23 @@ import { whereArgs } from './types'
 
 export type queryState = {
 	collection: string|null,
-	where: whereArgs|null,
-	order: any|null,
-	quantity: number|null,
-	page: number|null,
-	with: string[],
+	// where: whereArgs|null,
+	// order: any|null,
+	// quantity: number|null,
+	// page: number|null,
+	// with: string[],
 }
 
 class Query {
 
 	protected _db: MongoDB|null = null;
 
-	protected _model: any;
-
-	protected state: queryState = {
+	protected _state: queryState = {
 		collection: null,
-		where: null,
-		order: null,
-		quantity: null,
-		page: null,
-		with: [],
 	}
 
-	constructor(model: Model){
-		this._model = model;
-		this.state.collection = (model.constructor as any).collection;
+	constructor(state: queryState){
+		this._state = { ...this._state, ...state };
 	}
 
 	protected get db(): MongoDB {
@@ -49,33 +41,36 @@ class Query {
 		} else {
 			this._db = await MongoDB.restore( Humpback.state.db.connection, Config.db.DB_NAME );
 		}
-
-	}
-
-	public setWhere(args: whereArgs): void {
-		this.state.where = args;
-	}
-
-	public setQuantity(qty: number): void {
-		this.state.quantity = qty;
-	}
-
-	public setWith(relation: string): void {
-		this.state.with.push(relation);
-
-		this._model[relation]()().then(console.log)
 	}
 
 	public async first(): Promise<any> {
 		await this.connect();
 
-		return this.db.first(this.state);
+		return this.db.first(this._state);
 	}
 
 	public async get(): Promise<any[]> {
 		await this.connect();
 
-		return this.db.get(this.state);
+		return this.db.get(this._state);
+	}
+
+	public async create(): Promise<any[]> {
+		await this.connect();
+
+		return this.db.get(this._state);
+	}
+
+	public async update(): Promise<any[]> {
+		await this.connect();
+
+		return this.db.get(this._state);
+	}
+
+	public async delete(): Promise<any[]> {
+		await this.connect();
+
+		return this.db.get(this._state);
 	}
 
 }

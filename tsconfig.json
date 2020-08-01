@@ -3,7 +3,7 @@
 		"target": "es6",
 		"module": "commonjs",
 		"lib": [
-			"es2015",
+			"esnext"
 		],
 		"declaration": true,
 		"declarationMap": true,
@@ -23,7 +23,7 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": false
 	},
 	"exclude": [
 		"node_modules",
