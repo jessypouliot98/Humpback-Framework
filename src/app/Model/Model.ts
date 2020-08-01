@@ -42,20 +42,15 @@ class Model {
 
 	public static dispatchesEvents = {};
 
-	// Initialiser
-
-	constructor(){
-		Object.defineProperty(this, '_query', {
-			enumerable: false,
-			value: new Query(this),
-		})
-	}
-
 	// Get
 
 	protected get query(): Query {
-		if(this._query === null)
-			throw DatabaseException.notInitialized();
+		if (this._query === null) {
+			Object.defineProperty(this, '_query', {
+				enumerable: false,
+				value: new Query(this),
+			})
+		}
 
 		return (this._query as Query);
 	}
@@ -109,12 +104,12 @@ class Model {
 		return new this().where(a, b, c);
 	}
 
-	public async find(id: string|number): Promise<Collection> {
-		return this.where('_id', '=', id).first();
+	public async find(id: string|number): Promise<Model> {
+		return await this.where('_id', '=', id).first() as Model;
 	}
 
-	public static async find(id: string|number): Promise<Collection> {
-		return new this().find(id);
+	public static async find(id: string|number): Promise<Model> {
+		return await new this().find(id);
 	}
 
 	// Order
@@ -159,28 +154,33 @@ class Model {
 
 	// Query
 
-	public async first(): Promise<Collection> {
+	public async first(): Promise<Model|Collection> {
 		return this.query.first();
 	}
 
-	public async get(): Promise<Collection[]> {
-		return this.query.get();
+	public async get(): Promise<Model|Collection> {
+		// return this.query.get();
+		return this;
 	}
 
-	public async create(): Promise<Collection> {
-		return new Collection(this, { hello: 'world' });
+	public async create(): Promise<Model|Collection> {
+		return this;
 	}
 
-	public async update(): Promise<Collection> {
-		return new Collection(this, { hello: 'world' });
+	public async update(): Promise<Model|Collection> {
+		return this;
 	}
 
-	public async replace(): Promise<Collection> {
-		return new Collection(this, { hello: 'world' });
+	public async replace(): Promise<Model|Collection> {
+		return this;
 	}
 
-	public async delete(): Promise<Collection> {
-		return new Collection(this, { hello: 'world' });
+	public async delete(): Promise<Model|Collection> {
+		return this;
+	}
+
+	public async forceDelete(): Promise<Model|Collection> {
+		return this;
 	}
 
 }

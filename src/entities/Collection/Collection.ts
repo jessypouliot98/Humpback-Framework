@@ -1,29 +1,37 @@
 import Model from '../../App/Model/Model'
 
-class Collection {
+class Collection extends Array {
 
-	public model: Model;
-	public entries: any;
+	_modelType?: ClassDecorator;
 
-	protected _id?: string|number;
-
-	constructor(model: Model, data?: any){
-		this.model = model;
-		this.entries = data;
-
-		Object.defineProperty(this, '_id', { enumerable: false, value: data?._id });
-	}
-
-	public get id(): string {
-		if( this._id == undefined ) {
-			throw new Error('TODO')
+	constructor(...items: Model[]) {
+		if (!items.length) {
+			throw new Error('An empty Collection may not be created');
 		}
 
-		return this._id.toString();
+		const modelType: ClassDecorator = items[0].constructor;
+
+		if ( items.some(item => item.constructor !== this._modelType) ) {
+			throw new Error('A Collection may only have items from the same type');
+		}
+
+		super(...items as any);
 	}
 
-	public async delete(): Promise<Collection> {
-		return this.model.where('_id', '=', this.id).delete();
+	public async delete() {
+		this.forEach((item: Model) => {
+			item.delete();
+		});
+
+		return this;
+	}
+
+	public async forceDelete() {
+		this.forEach((item: Model) => {
+			item.forceDelete();
+		});
+
+		return this;
 	}
 
 }

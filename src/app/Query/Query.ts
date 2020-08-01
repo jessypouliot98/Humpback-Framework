@@ -1,6 +1,6 @@
 import Humpback from '../Humpback/Humpback'
 import Collection from '../../Entities/Collection/Collection'
-import BaseConfig from '../BaseConfig/BaseConfig'
+import Config from '../Config/Config'
 import MongoDB from './Drivers/MongoDB/MongoDB'
 import Model from '../Model/Model'
 import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
@@ -44,10 +44,10 @@ class Query {
 
 	protected async connect(): Promise<void> {
 		if( Humpback.state.db.connection === null ){
-			this._db = await MongoDB.connect( BaseConfig.db );
+			this._db = await MongoDB.connect( Config.db );
 			Humpback.state.db.connection = this._db.connection;
 		} else {
-			this._db = await MongoDB.restore( Humpback.state.db.connection, BaseConfig.db.DB_NAME );
+			this._db = await MongoDB.restore( Humpback.state.db.connection, Config.db.DB_NAME );
 		}
 
 	}
@@ -66,22 +66,16 @@ class Query {
 		this._model[relation]()().then(console.log)
 	}
 
-	// public setWith(with: string): void {
-	// 	this.state.with.push(with);
-	// }
-
-	public async first(){
+	public async first(): Promise<any> {
 		await this.connect();
-		const data = await this.db.first(this.state);
 
-		return new Collection(this._model, data);
+		return this.db.first(this.state);
 	}
 
-	public async get(){
+	public async get(): Promise<any[]> {
 		await this.connect();
-		const aData = await this.db.get(this.state);
 
-		return aData.map(data => new Collection(this._model, data));
+		return this.db.get(this.state);
 	}
 
 }

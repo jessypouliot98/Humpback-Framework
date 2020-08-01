@@ -5,7 +5,11 @@ dotenv.config();
 
 const env = process.env;
 
-class BaseConfig {
+class Config {
+
+	public static get env() {
+		return env;
+	}
 
 	public static get app() {
 		const APP_HOST = env.APP_HOST || '127.0.0.1';
@@ -73,4 +77,4 @@ class BaseConfig {
 
 }
 
-export default BaseConfig
+export default Config

@@ -1,6 +1,6 @@
 import express from 'express'
 import Route from '../../App/Http/Route/Route'
-import BaseConfig from '../../App/BaseConfig/BaseConfig'
+import Config from '../../App/Config/Config'
 import state from './State'
 import 'colors'
 
@@ -32,8 +32,8 @@ class Humpback {
 	}
 
 	protected listenToPort(){
-		this._app.listen( BaseConfig.app.APP_PORT, BaseConfig.app.APP_HOST, () => {
-			console.log(`\nHTTP Server running at [${BaseConfig.app.APP_HOST.yellow}] on port [${BaseConfig.app.APP_PORT.toString().yellow}]\n`);
+		this._app.listen( Config.app.APP_PORT, Config.app.APP_HOST, () => {
+			console.log(`\nHTTP Server running at [${Config.app.APP_HOST.yellow}] on port [${Config.app.APP_PORT.toString().yellow}]\n`);
 		} );
 	}
 

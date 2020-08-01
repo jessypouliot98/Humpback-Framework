@@ -1,7 +1,7 @@
 import User from '../../../Model/User/User'
 import Request from '../../Request/Request'
 import Middleware from '../Middleware'
-import BaseConfig from '../../../BaseConfig/BaseConfig'
+import Config from '../../../Config/Config'
 import Jwt from 'jsonwebtoken'
 import Collection from '../../../../Entities/Collection/Collection'
 
@@ -14,7 +14,7 @@ class Auth extends Middleware {
 			_email: user.entries.email,
 		};
 
-		return Jwt.sign(payload, BaseConfig.app.APP_KEY);
+		return Jwt.sign(payload, Config.app.APP_KEY);
 	}
 
 	public static validateToken(token?: string): boolean  {
@@ -32,7 +32,7 @@ class Auth extends Middleware {
 			token = token.slice(7, token.length);
 		}
 
-		return Jwt.verify(token, BaseConfig.app.APP_KEY) || null;
+		return Jwt.verify(token, Config.app.APP_KEY) || null;
 	}
 
 	/**
