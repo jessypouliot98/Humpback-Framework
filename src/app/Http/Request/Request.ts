@@ -1,28 +1,24 @@
 import Humpback from '../../Humpback/Humpback'
-import Collection from '../../../Entities/Collection/Collection'
+import { Request as ExpressRequest } from 'express'
 
 class Request {
 
-	protected _resolve: any;
-
 	public headers: any = {};
-	// public url: string = '';
 
-	constructor(request?: any, resolve?: any){
-		if( request == undefined || resolve == undefined ){
+	constructor(request: ExpressRequest | null){
+		if(!request){
 			return;
 		}
 
-		Object.defineProperty(this, '_resolve', { enumerable: false, value: resolve });
 		this.headers = request.headers;
 	}
 
 	public static get current(): Request {
-		return Humpback.state.http.request || new this(null, null);
+		return Humpback.state.http.request || new this(null);
 	}
 
-	public static set(request: any, resolve: any): void {
-		Humpback.state.http.request = new this(request, resolve);
+	public static set(request: any): void {
+		Humpback.state.http.request = new this(request);
 	}
 
 	public get ip(): string {
@@ -35,34 +31,6 @@ class Request {
 
 	public get bearerToken(): string|null {
 		return this.headers?.authorization || null;
-	}
-
-	// Resolve
-
-	public resolve(mode: string, data: any): void {
-		if( data instanceof Collection ){
-			data = data.entries;
-		} else if( Array.isArray(data) && data.every(d => d instanceof Collection) ){
-			data = data.map(d => d.entries);
-		}
-
-		this._resolve[mode](data);
-	}
-
-	public send(data: any): void {
-		this.resolve('send', data);
-	}
-
-	public static send(data: any): void {
-		Request.current.send(data);
-	}
-
-	public json(data: any): void {
-		this.resolve('json', data);
-	}
-
-	public static json(data: any): void {
-		Request.current.json(data);
 	}
 
 }

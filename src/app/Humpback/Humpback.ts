@@ -1,7 +1,9 @@
 import express from 'express'
+import path from 'path'
 import Route from '../../App/Http/Route/Route'
 import Config from '../../App/Config/Config'
 import state from './State'
+import { enumViewEngines } from '../../Entities/View/View';
 import 'colors'
 
 class Humpback {
@@ -12,7 +14,7 @@ class Humpback {
 		this.initialise();
 	}
 
-	public static start(){
+	public static start() {
 		return new this();
 	}
 
@@ -45,6 +47,15 @@ class Humpback {
 		routes.forEach(route => {
 			this.attachRoute(route);
 		})
+	}
+
+	public setViewEngine(viewEngine: enumViewEngines = null, viewDirectory: string = path.join(process.cwd(), '/resources/views')) {
+		if (!viewEngine) {
+			return;
+		}
+
+		this._app.set('views', viewDirectory);
+		this._app.set('view engine', viewEngine);
 	}
 
 }

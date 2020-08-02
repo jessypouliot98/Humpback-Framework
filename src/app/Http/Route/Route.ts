@@ -1,14 +1,18 @@
-import express from 'express'
+import express, { Request as ExpressRequest, Response as ExpressResponse } from 'express'
 import Request from '../Request/Request'
+import Response from '../Response/Response'
 import NoSuchMethodException from '../../../Exception/NoSuchMethodException/NoSuchMethodException'
+
+export type enumServeMethods = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 class Route {
 
-	public router: any = express.Router();
+	public router: express.Router = express.Router();
 
-	protected serve(method: string, route: string, delegate: any): any {
-		return this.router[method](route, async (req: any, res: any) => {
-			Request.set(req, res);
+	protected serve(method: enumServeMethods, route: string, delegate: any): any {
+		return this.router[method](route, async (req: ExpressRequest, res: ExpressResponse) => {
+			Request.set(req);
+			Response.set(res)
 			try{
 				let data: any;
 
@@ -30,10 +34,10 @@ class Route {
 					throw NoSuchMethodException.routeDelegate();
 				}
 
-				Request.send(data);
+				Response.send(data);
 			} catch(e){
 				console.error(e)
-				Request.send(e);
+				Response.send(e);
 			}
 		})
 	}
@@ -53,7 +57,7 @@ class Route {
 	}
 
 	protected group(route: string, delegate: Function): any {
-		return this.router.use(route, delegate);
+		return this.router.use(route, delegate as any);
 	}
 
 	public get(route: string, delegate: any): any {
