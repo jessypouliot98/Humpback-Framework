@@ -3,14 +3,24 @@ import { Request as ExpressRequest } from 'express'
 
 class Request {
 
+	protected _raw?: ExpressRequest;
 	public headers: any = {};
+	public params: any = {};
+	public body: any = {};
 
 	constructor(request: ExpressRequest | null){
 		if(!request){
 			return;
 		}
 
+		Object.defineProperty(this, '_raw', {
+			value: request,
+			enumerable: false,
+		});
+
 		this.headers = request.headers;
+		this.params = request.params;
+		this.body = request.body;
 	}
 
 	public static get current(): Request {
@@ -31,6 +41,10 @@ class Request {
 
 	public get bearerToken(): string|null {
 		return this.headers?.authorization || null;
+	}
+
+	public getRaw(): ExpressRequest | null {
+		return this._raw || null;
 	}
 
 }

@@ -1,106 +1,92 @@
-import Query from '../../Query/Query'
-
-export type enumCompare = '=' | '/=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn';
-export type enumOrder =  'ASC' | 'DESC';
-
-export type DBState = {
-	collection: string|null,
-	select: string|string[],
-	where: [string, enumCompare, any]|null,
-	order: [string, enumOrder]|null,
-	limit: number,
-	offset: number,
-	payload: object|null,
-};
+import Query, { queryState, payload } from '../../Query/Query'
 
 class Db {
 
-	protected _state: DBState = {
+	protected _state: queryState = {
 		collection: null,
 		select: '*',
 		where: null,
 		order: null,
 		limit: 0,
 		offset: 0,
-		payload: null,
 	}
 
 	// Collection
 
-	public collection(collection: DBState['collection']) {
+	public collection(collection: queryState['collection']) {
 		this._state.collection = collection;
 		return this;
 	}
 
-	public static collection(collection: DBState['collection']) {
+	public static collection(collection: queryState['collection']) {
 		return new this().collection(collection);
 	}
 
 	// Select
 
-	public select(select: DBState['select']) {
+	public select(select: queryState['select']) {
 		this._state.select = select;
 		return this;
 	}
 
-	public static select(select: DBState['select']) {
+	public static select(select: queryState['select']) {
 		return new this().select(select);
 	}
 
-	public where(where: DBState['where']) {
+	public where(where: queryState['where']) {
 		this._state.where = where;
 		return this;
 	}
 
-	public static where(where: DBState['where']) {
+	public static where(where: queryState['where']) {
 		return new this().where(where);
 	}
 
-	public order(order: DBState['order']) {
+	public order(order: queryState['order']) {
 		this._state.order = order;
 		return this;
 	}
 
-	public static order(order: DBState['order']) {
+	public static order(order: queryState['order']) {
 		return new this().order(order);
 	}
 
-	public limit(limit: DBState['limit']) {
+	public limit(limit: queryState['limit']) {
 		this._state.limit = limit;
 		return this;
 	}
 
-	public static limit(limit: DBState['limit']) {
+	public static limit(limit: queryState['limit']) {
 		return new this().limit(limit);
 	}
 
-	public offset(offset: DBState['offset']) {
+	public offset(offset: queryState['offset']) {
 		this._state.offset = offset;
 		return this;
 	}
 
-	public static offset(offset: DBState['offset']) {
+	public static offset(offset: queryState['offset']) {
 		return new this().offset(offset);
 	}
 
 	public async get(): Promise<any[]> {
-		return new Query({ collection: this._state.collection }).get();
+		return new Query(this._state).get();
 	}
 
-	public async create(payload: any): Promise<any> {
-		return new Query({ collection: this._state.collection }).create();
+	public async create(payload: payload): Promise<any> {
+		return new Query(this._state).create(payload);
 	}
 
-	public async update(payload: any): Promise<any> {
-		return new Query({ collection: this._state.collection }).update();
+	public async update(payload: payload): Promise<any> {
+		return new Query(this._state).update(payload);
 	}
 
 	public async delete(): Promise<any> {
-		return new Query({ collection: this._state.collection }).delete();
+		return new Query(this._state).delete();
 	}
 
 	public async first(): Promise<any> {
-		return new Query({ collection: this._state.collection }).first();
+		return new Query(this._state).first();
 	}
 }
 

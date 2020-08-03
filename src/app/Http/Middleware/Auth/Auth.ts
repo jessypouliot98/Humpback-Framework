@@ -1,4 +1,4 @@
-import Model, { User } from '../../../Model'
+import { User } from '../../../Model'
 import Request from '../../Request/Request'
 import Middleware from '../Middleware'
 import Config from '../../../Config/Config'
@@ -6,7 +6,7 @@ import Jwt from 'jsonwebtoken'
 
 class Auth extends Middleware {
 
-	public static createToken(user: Model): string {
+	public static createToken(user: User): string {
 		const payload = {
 			_id: (user as any).id,
 			_name: (user as any).name,
@@ -17,7 +17,7 @@ class Auth extends Middleware {
 	}
 
 	public static validateToken(token?: string): boolean  {
-		return !!Auth.parseToken(token);
+		return !!this.parseToken(token);
 	}
 
 	public static parseToken(token?: string): object|string|null  {
@@ -37,9 +37,9 @@ class Auth extends Middleware {
 	/**
 	*	Get current authenticated user or return null if no user is authenticated
 	*
-	*	@return Collection|null - Authenticated user
+	*	@return Model|null - Authenticated user
 	*/
-	public static async user(token?: string): Promise<Model|null> {
+	public static async user(token?: string): Promise<User|null> {
 		const parsedToken = Auth.parseToken(token) as any;
 		if( !parsedToken && !parsedToken._email ) return null;
 
@@ -51,7 +51,7 @@ class Auth extends Middleware {
 	// Middlewares
 
 	public static isLoggedIn(req, res, next): void {
-		if( !Auth.validateToken(req.headers?.bearer) ){
+		if( !this.validateToken(req.headers?.bearer) ){
 			res.json({
 				success: false,
 				message: 'Invalid token'

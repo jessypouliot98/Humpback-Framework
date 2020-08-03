@@ -1,16 +1,19 @@
 import express from 'express'
 import path from 'path'
-import Route from '../../App/Http/Route/Route'
-import Config from '../../App/Config/Config'
+import Route from '../Http/Route/Route'
+import Config from '../Config/Config'
 import state from './State'
-import { enumViewEngines } from '../../Entities/View/View';
+import { enumViewEngines } from '../../Entities/View/View'
+import { HumpbackHttp } from '../Http/Middleware'
+import bodyParser from 'body-parser'
+import cors from 'cors'
 import 'colors'
 
 class Humpback {
 
 	protected _app: any;
 
-	constructor(){
+	constructor() {
 		this.initialise();
 	}
 
@@ -26,24 +29,32 @@ class Humpback {
 		(global as any).__HUMPBACK__ = state;
 	}
 
-	protected initialise(){
+	protected initialise() {
 		Humpback.state = state;
 		this._app = express();
 
 		this.listenToPort();
+		this.setupMiddlewares();
 	}
 
-	protected listenToPort(){
+	protected listenToPort() {
 		this._app.listen( Config.app.APP_PORT, Config.app.APP_HOST, () => {
 			console.log(`\nHTTP Server running at [${Config.app.APP_HOST.yellow}] on port [${Config.app.APP_PORT.toString().yellow}]\n`);
 		} );
 	}
 
-	public attachRoute(route: Route){
+	protected setupMiddlewares() {
+		this._app.use( bodyParser.urlencoded({ extended: false }) );
+		this._app.use( bodyParser.json() );
+		this._app.use( cors() );
+		this._app.use( HumpbackHttp.setup );
+	}
+
+	public attachRoute(route: Route) {
 		this._app.use(route);
 	}
 
-	public attachRoutes(routes: Route[]){
+	public attachRoutes(routes: Route[]) {
 		routes.forEach(route => {
 			this.attachRoute(route);
 		})

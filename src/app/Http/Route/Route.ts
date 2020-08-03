@@ -10,9 +10,8 @@ class Route {
 	public router: express.Router = express.Router();
 
 	protected serve(method: enumServeMethods, route: string, delegate: any): any {
-		return this.router[method](route, async (req: ExpressRequest, res: ExpressResponse) => {
+		return this.router[method](route, async(req: ExpressRequest) => {
 			Request.set(req);
-			Response.set(res)
 			try{
 				let data: any;
 
@@ -25,10 +24,10 @@ class Route {
 						throw NoSuchMethodException.routeDelegate();
 					}
 
-					data = await conrollerInstance[func](req);
+					data = await conrollerInstance[func](Request.current);
 				}
 				else if( typeof delegate === 'function' ){
-					data = await delegate(req);
+					data = await delegate(Request.current);
 				}
 				else {
 					throw NoSuchMethodException.routeDelegate();

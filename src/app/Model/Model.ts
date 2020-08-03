@@ -1,7 +1,7 @@
 import BaseModel from './BaseModel'
 import Collection from '../../Entities/Collection/Collection'
-import Db, { DBState } from './Db/Db'
-import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
+import Db from './Db/Db'
+import { payload, enumCompare } from '../Query/Query'
 
 class Model extends BaseModel {
 
@@ -11,20 +11,28 @@ class Model extends BaseModel {
 	constructor(values?: object){
 		super();
 
+		Object.defineProperty(this, '_db', { enumerable: false, value: this._db });
+		Object.defineProperty(this, '_entries', { enumerable: false, value: this._entries });
+		Object.defineProperty(this, 'generateModel', { enumerable: false, value: this.generateModel });
+		Object.defineProperty(this, 'parsePayload', { enumerable: false, value: this.parsePayload });
+
 		if (!values) {
 			return;
 		}
 
-		this._entries = Object.keys(values).reduce<any>((key: string, acc: any) => {
+		this._entries = Object.keys(values).reduce<any>((acc: any, key: string) => {
+			const value = values[key];
+
 			if (key === '_id') {
 				key = 'id';
 			}
 
-			this[key] = values[key];
-			acc[key] = values[key];
+			acc[key] = this[key] = value;
 
 			return acc;
 		}, {});
+
+		this.db.where(['id', '=', this._entries.id])
 	}
 
 	protected get db(): Db {
@@ -37,8 +45,28 @@ class Model extends BaseModel {
 
 	// Helpers
 
-	protected generateModel(data: any): Model {
-		return new (this.constructor as any)(data);
+	public toObject() {
+		return { ...this as any };
+	}
+
+	protected generateModel = (data: any): Model => {
+		const self: any = this.constructor;
+		return new self(data);
+	}
+
+	protected parsePayload = (payload: any): any => {
+		const self: any = this.constructor;
+		const fields = self.columns
+
+		return Object.keys(payload).reduce((acc, key) => {
+			if ( !fields[key] ) {
+				return acc;
+			}
+
+			acc[key] = payload[key];
+
+			return acc;
+		}, {});
 	}
 
 	// Relations
@@ -69,18 +97,27 @@ class Model extends BaseModel {
 
 	// Select
 
-	public where(a: string, b: string|number, c?: string|number): this {
+	public where(a: string, b: string|number|enumCompare, c?: string|number): this {
 		let field: string,
-			condition: string,
+			condition: enumCompare,
 			value: string | number;
 
-		if( c ){ field = a; condition = (b as string); value = c; }
-		else { field = a; condition = '='; value = b; }
+		if ( c ) {
+			field = a;
+			condition = (b as enumCompare);
+			value = c;
+		} else {
+			field = a;
+			condition = '=';
+			value = b;
+		}
+
+		this.db.where([field, condition, value]);
 
 		return this;
 	}
 
-	public static where(a: string, b: string|number, c?: string|number) {
+	public static where(a: string, b: string|number|enumCompare, c?: string|number) {
 		return new this().where(a, b, c);
 	}
 
@@ -126,7 +163,7 @@ class Model extends BaseModel {
 
 	public async first(): Promise<Model|null> {
 		const data = await this.db.first();
-		return new (this.constructor as any)(data);
+		return this.generateModel(data);
 	}
 
 	public async get(): Promise<Collection|null> {
@@ -134,12 +171,16 @@ class Model extends BaseModel {
 		return new Collection( ...data.map(this.generateModel) );
 	}
 
-	public async create(payload: DBState['payload']): Promise<any> {
-		return await this.db.create(payload);
+	public async create(payload: payload): Promise<Model> {
+		return await this.db.create( this.parsePayload(payload) );
 	}
 
-	public async update(payload: DBState['payload']): Promise<any> {
-		return await this.db.update(payload);
+	public static async create(payload: payload): Promise<Model> {
+		return new this().create(payload);
+	}
+
+	public async update(payload: payload): Promise<any> {
+		return await this.db.update( this.parsePayload(payload) );
 	}
 
 	public async delete(): Promise<any> {
@@ -150,7 +191,7 @@ class Model extends BaseModel {
 		return await this.db.delete();
 	}
 
-	public async all(): Promise<Collection|null> {
+	public async all(): Promise<Collection|null|any> {
 		const data = await this.db.get();
 		return new Collection( ...data.map(this.generateModel) );
 	}

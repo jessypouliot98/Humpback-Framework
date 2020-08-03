@@ -6,14 +6,19 @@ import Model from '../Model/Model'
 import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
 import { whereArgs } from './types'
 
+export type enumCompare = '=' | '/=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn';
+export type enumOrder =  'ASC' | 'DESC';
+
 export type queryState = {
 	collection: string|null,
-	// where: whereArgs|null,
-	// order: any|null,
-	// quantity: number|null,
-	// page: number|null,
-	// with: string[],
-}
+	select: string|string[],
+	where: [string, enumCompare, any]|null,
+	order: [string, enumOrder]|null,
+	limit: number,
+	offset: number,
+};
+
+export type payload = object;
 
 class Query {
 
@@ -21,6 +26,11 @@ class Query {
 
 	protected _state: queryState = {
 		collection: null,
+		select: '*',
+		where: null,
+		order: null,
+		limit: 0,
+		offset: 0,
 	}
 
 	constructor(state: queryState){
@@ -55,13 +65,13 @@ class Query {
 		return this.db.get(this._state);
 	}
 
-	public async create(): Promise<any[]> {
+	public async create(payload: any): Promise<any[]> {
 		await this.connect();
 
-		return this.db.get(this._state);
+		return this.db.insert(this._state, payload);
 	}
 
-	public async update(): Promise<any[]> {
+	public async update(payload: any): Promise<any[]> {
 		await this.connect();
 
 		return this.db.get(this._state);
@@ -70,7 +80,7 @@ class Query {
 	public async delete(): Promise<any[]> {
 		await this.connect();
 
-		return this.db.get(this._state);
+		return this.db.delete(this._state)
 	}
 
 }

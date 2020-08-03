@@ -1,5 +1,6 @@
 import Humpback from '../../Humpback/Humpback'
 import Collection from '../../../Entities/Collection/Collection'
+import Model from '../../Model/Model'
 import View from '../../../Entities/View/View'
 import { Response as ExpressResponse } from 'express'
 
@@ -32,12 +33,6 @@ class Response {
 	}
 
 	public respond(mode: string, data: any): void {
-		if( data instanceof Collection ){
-			data = data.entries;
-		} else if( Array.isArray(data) && data.every(d => d instanceof Collection) ){
-			data = data.map(d => d.entries);
-		}
-
 		this.res[mode](data);
 	}
 

@@ -1,7 +1,16 @@
-import { MongoClient, ObjectID, Db } from 'mongodb'
+import { MongoClient, ObjectID, Db, FilterQuery } from 'mongodb'
 import NullException from '../../../../Exception/NullException/NullException'
-import { queryState } from '../../Query'
+import { queryState, enumOrder } from '../../Query'
 import { connectionArgs } from '../../types'
+
+export type mongoState = {
+	collection: string,
+	select: string|string[],
+	where: FilterQuery<any>,
+	order: [string, enumOrder] | null,
+	limit: number,
+	offset: number,
+};
 
 class MongoDB {
 
@@ -40,24 +49,24 @@ class MongoDB {
 		this.constructor().disconnect(this.connection);
 	}
 
-	protected parseQueryState(args: queryState): queryState {
+	protected parseQueryState(args: queryState): mongoState {
 		const parsedArgs: any = Object.keys({...args}).reduce((acc, key) => {
 			let prop = args[key];
 
-			if( prop === null ) return acc;
-
-			if(prop?.field === '_id'){
-				prop.value = new ObjectID(prop.value);
+			if ( prop === null ) {
+				return acc;
 			}
 
 			switch(key){
 
 				case 'where':
-					// TODO prop.condition
-					acc[key] = { [prop.field]: prop.value };
+					if (['id', '_id'].includes(prop[0])) {
+						prop[0] = '_id';
+						prop[2] = new ObjectID(prop[2]);
+					}
+					acc[key] = { [prop[0]]: prop[2] };
 					break;
 
-				case 'order':
 				default:
 					acc[key] = prop;
 					break;
@@ -67,14 +76,14 @@ class MongoDB {
 			return acc;
 		}, {});
 
-		return (parsedArgs as queryState);
+		return (parsedArgs as mongoState);
 	}
 
 	public async first(args: queryState): Promise<any> {
-		args = this.parseQueryState(args);
+		const parsedArgs = this.parseQueryState(args);
 
-		const collection = args.collection;
-		// const where = args.where;
+		const collection = parsedArgs.collection;
+		const where = parsedArgs.where;
 
 		let query: any;
 
@@ -84,17 +93,15 @@ class MongoDB {
 
 		query = this._db.collection( collection );
 
-		return await query.findOne( /* where */ );
+		return await query.findOne( where );
 	}
 
 	public async get(args: queryState): Promise<any[]> {
-		args = this.parseQueryState(args);
+		const parsedArgs = this.parseQueryState(args);
 
-		const collection = args.collection;
-		// const where = args.where;
-		// const quantity = args.quantity;
-		// const page = args.page;
-		// const order = args.order;
+		const collection = parsedArgs.collection;
+		const where = parsedArgs.where;
+		const order = parsedArgs.order;
 
 		let query: any;
 
@@ -104,21 +111,43 @@ class MongoDB {
 
 		query = this._db.collection( collection );
 
-		query = await query.find( /* where */ );
+		query = await query.find(where);
 
-		// if( quantity ){
-		//
-		// 	if( quantity >= 2 ) query = await query.limit( quantity );
-		//
-		// 	if( page ){
-		// 		if( page >= 2 && quantity >= 2 ) query = await query.skip( (page - 1) * quantity );
-		// 	}
-		//
-		// }
-
-		// if( order ) query = await query.sort( order );
+		if ( order ) {
+			query = await query.sort( order );
+		}
 
 		return await query.toArray();
+	}
+
+	public async insert(args: queryState, payload: any): Promise<any[]> {
+		const parsedArgs = this.parseQueryState(args);
+
+		const collection = parsedArgs.collection;
+
+		let query: any;
+
+		if( collection === null ){
+			throw NullException.noValueFor('collection', 'string');
+		}
+
+		query = this._db.collection( collection );
+
+		return query.insertOne(payload);
+	}
+
+	public async delete(args: queryState): Promise<any> {
+		const parsedArgs = this.parseQueryState(args);
+
+		const collection = parsedArgs.collection;
+		const where = parsedArgs.where;
+
+		if( collection === null ){
+			throw NullException.noValueFor('collection', 'string');
+		}
+
+		console.log(where)
+		return this._db.collection( collection ).deleteMany(where);
 	}
 
 }
