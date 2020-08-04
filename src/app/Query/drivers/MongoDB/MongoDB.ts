@@ -1,6 +1,6 @@
 import { MongoClient, ObjectID, Db, FilterQuery } from 'mongodb'
 import NullException from '../../../../Exception/NullException/NullException'
-import { queryState, enumOrder } from '../../Query'
+import { whereArgs, queryState, enumOrder } from '../../Query'
 import { connectionArgs } from '../../types'
 
 export type mongoState = {
@@ -60,11 +60,30 @@ class MongoDB {
 			switch(key){
 
 				case 'where':
-					if (['id', '_id'].includes(prop[0])) {
-						prop[0] = '_id';
-						prop[2] = new ObjectID(prop[2]);
+					const formatWhere = (where: whereArgs) => {
+						console.log(where)
+						if (['id', '_id'].includes(where[0])) {
+							where[0] = '_id';
+							where[2] = new ObjectID(where[2]);
+						}
+
+						switch(where[1]){
+							case '!=':
+								return { [where[0]]: { $ne: where[2], $exists: true } }
+
+							case '=':
+							default:
+								return { [where[0]]: where[2] };
+						}
 					}
-					acc[key] = { [prop[0]]: prop[2] };
+
+					if (prop.length > 1) {
+						acc[key] = {
+							$and: prop.map(formatWhere)
+						}
+					} else {
+						acc[key] = formatWhere(prop[0]);
+					}
 					break;
 
 				default:
@@ -80,73 +99,66 @@ class MongoDB {
 	}
 
 	public async first(args: queryState): Promise<any> {
-		const parsedArgs = this.parseQueryState(args);
-
-		const collection = parsedArgs.collection;
-		const where = parsedArgs.where;
-
-		let query: any;
+		const { collection, where } = this.parseQueryState(args);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');
 		}
 
-		query = this._db.collection( collection );
-
-		return await query.findOne( where );
+		return await this._db.collection(collection).findOne(where);
 	}
 
 	public async get(args: queryState): Promise<any[]> {
-		const parsedArgs = this.parseQueryState(args);
-
-		const collection = parsedArgs.collection;
-		const where = parsedArgs.where;
-		const order = parsedArgs.order;
-
-		let query: any;
+		const { collection, where, limit, offset, order } = this.parseQueryState(args);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');
 		}
 
-		query = this._db.collection( collection );
+		let query = this._db.collection(collection).find(where);
 
-		query = await query.find(where);
+		if (order) {
+			query = query.sort(order);
+		}
 
-		if ( order ) {
-			query = await query.sort( order );
+		if (limit) {
+			query = query.limit(limit);
+		}
+
+		if (offset) {
+			query = query.skip(offset);
 		}
 
 		return await query.toArray();
 	}
 
-	public async insert(args: queryState, payload: any): Promise<any[]> {
-		const parsedArgs = this.parseQueryState(args);
-
-		const collection = parsedArgs.collection;
-
-		let query: any;
+	public async create(args: queryState, payload: any): Promise<any> {
+		const { collection } = this.parseQueryState(args);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');
 		}
 
-		query = this._db.collection( collection );
+		return this._db.collection(collection).insertOne(payload);
+	}
 
-		return query.insertOne(payload);
+	public async update(args: queryState, payload: any): Promise<any> {
+		const { collection, where } = this.parseQueryState(args);
+
+		if( collection === null ){
+			throw NullException.noValueFor('collection', 'string');
+		}
+
+		return this._db.collection( collection ).updateMany(where, { $set: payload });
 	}
 
 	public async delete(args: queryState): Promise<any> {
-		const parsedArgs = this.parseQueryState(args);
-
-		const collection = parsedArgs.collection;
-		const where = parsedArgs.where;
+		const { collection, where } = this.parseQueryState(args);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');
 		}
 
-		console.log(where)
 		return this._db.collection( collection ).deleteMany(where);
 	}
 

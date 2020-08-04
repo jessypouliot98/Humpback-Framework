@@ -1,11 +1,10 @@
 import Controller from '../Controller'
 import User from '../../../Model/User/User'
-import Request from '../../Request/Request'
 
 class UserController extends Controller {
 
 	public async index() {
-		return await User.all();
+		return await User.offset(1).all();
 	}
 
 	public async show({ params }) {
@@ -13,21 +12,15 @@ class UserController extends Controller {
 	}
 
 	public async create({ body }) {
-			return await User.create(body);
+		return await User.create(body);
 	}
 
-	public async update() {
-		return 'Hello World';
+	public async update({ params, body }) {
+		return await User.where('id', params.id).update(body);
 	}
 
 	public async delete({ params }) {
-		const user = await User.find(params.id);
-
-		if (!user) {
-			return;
-		}
-
-		return user.forceDelete();
+		return await User.where('id', params.id).delete();
 	}
 
 }

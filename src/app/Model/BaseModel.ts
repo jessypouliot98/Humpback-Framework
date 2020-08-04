@@ -10,12 +10,12 @@ abstract class BaseModel {
 
 	public static get allColumns() {
 		const timestampColumns = this.useTimestamps ? {
-			created_at: String,
-			updated_at: String,
+			createdAt: String,
+			updatedAt: String,
 		} : undefined;
 
 		const deleteColumns = this.useSoftDeletes ? {
-			deleted_at: String,
+			deletedAt: String,
 		} : undefined;
 
 		return {

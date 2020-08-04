@@ -38,6 +38,9 @@ class Model extends BaseModel {
 	protected get db(): Db {
 		if (!this._db) {
 			this._db = Db.collection((this.constructor as any).collection);
+
+			const self: any = this.constructor;
+			this._db.useSoftDeletes = self.useSoftDeletes;
 		}
 
 		return this._db;
@@ -56,7 +59,7 @@ class Model extends BaseModel {
 
 	protected parsePayload = (payload: any): any => {
 		const self: any = this.constructor;
-		const fields = self.columns
+		const fields = self.allColumns;
 
 		return Object.keys(payload).reduce((acc, key) => {
 			if ( !fields[key] ) {
@@ -121,30 +124,53 @@ class Model extends BaseModel {
 		return new this().where(a, b, c);
 	}
 
-	// Order
+	// Trash
 
-	public orderBy(field: string, order: string = 'ASC'): this {
-		// TODO
-
+	public withoutTrash(): this {
+		this.db.getTrashed = 'without';
 		return this;
 	}
 
-	public latest(): this {
-		// TODO
+	public static withoutTrash() {
+		return new this().withoutTrash();
+	}
 
+	public withTrash(): this {
+		this.db.getTrashed = 'with';
 		return this;
+	}
+
+	public static withTrash() {
+		return new this().withTrash();
+	}
+
+	public onlyTrash(): this {
+		this.db.getTrashed = 'only';
+		return this;
+	}
+
+	public static onlyTrash() {
+		return new this().onlyTrash();
 	}
 
 	// Quantity
 
-	public limit(qty: number = 5): this {
-
+	public limit(limit: number = 10): this {
+		this.db.limit(limit);;
 		return this;
 	}
 
-	public page(nb: number = 1): this {
+	public static limit(limit: number = 10) {
+		return new this().limit(limit);
+	}
 
+	public offset(offset: number = 10): this {
+		this.db.offset(offset);;
 		return this;
+	}
+
+	public static offset(offset: number = 10) {
+		return new this().offset(offset);
 	}
 
 	// Relation
@@ -172,7 +198,16 @@ class Model extends BaseModel {
 	}
 
 	public async create(payload: payload): Promise<Model> {
-		return await this.db.create( this.parsePayload(payload) );
+		const self: any = this.constructor;
+		const now = self.useTimestamps ? Date.now() : undefined;
+		const deleted = self.useSoftDeletes ? null : undefined;
+
+		return await this.db.create( this.parsePayload({
+			...payload,
+			createdAt: now,
+			updatedAt: now,
+			deletedAt: deleted,
+		}) );
 	}
 
 	public static async create(payload: payload): Promise<Model> {
@@ -180,11 +215,24 @@ class Model extends BaseModel {
 	}
 
 	public async update(payload: payload): Promise<any> {
-		return await this.db.update( this.parsePayload(payload) );
+		const self: any = this.constructor;
+		const now = self.useTimestamps ? Date.now() : undefined;
+
+		return await this.db.update( this.parsePayload({
+			...payload,
+			updatedAt: now,
+		}) );
 	}
 
 	public async delete(): Promise<any> {
-		return await this.db.update({ deletedAt: '0' });
+		const self: any = this.constructor;
+		const now = self.useTimestamps ? Date.now() : undefined;
+
+		return await this.db.update({ deletedAt: now });
+	}
+
+	public async restore(): Promise<any> {
+		return await this.db.update({ deletedAt: null });
 	}
 
 	public async forceDelete(): Promise<any> {

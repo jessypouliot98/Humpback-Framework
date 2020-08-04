@@ -7,9 +7,3 @@ export type connectionArgs = {
 	DB_USERNAME?: string,
 	DB_PASSWORD?: string,
 }
-
-export type whereArgs = {
-	field: string,
-	condition: string,
-	value: string|number|ObjectID
-}

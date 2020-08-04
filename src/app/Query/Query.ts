@@ -1,20 +1,19 @@
 import Humpback from '../Humpback/Humpback'
-import Collection from '../../Entities/Collection/Collection'
 import Config from '../Config/Config'
 import MongoDB from './Drivers/MongoDB/MongoDB'
-import Model from '../Model/Model'
 import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
-import { whereArgs } from './types'
 
-export type enumCompare = '=' | '/=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn';
+export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains';
 export type enumOrder =  'ASC' | 'DESC';
+
+export type whereArgs = [string, enumCompare, any];
 
 export type queryState = {
 	collection: string|null,
 	select: string|string[],
-	where: [string, enumCompare, any]|null,
+	where: whereArgs[]|null,
 	order: [string, enumOrder]|null,
-	limit: number,
+	limit: number|null,
 	offset: number,
 };
 
@@ -68,13 +67,13 @@ class Query {
 	public async create(payload: any): Promise<any[]> {
 		await this.connect();
 
-		return this.db.insert(this._state, payload);
+		return this.db.create(this._state, payload);
 	}
 
 	public async update(payload: any): Promise<any[]> {
 		await this.connect();
 
-		return this.db.get(this._state);
+		return this.db.update(this._state, payload);
 	}
 
 	public async delete(): Promise<any[]> {
