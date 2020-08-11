@@ -61,7 +61,6 @@ class MongoDB {
 
 				case 'where':
 					const formatWhere = (where: whereArgs) => {
-						console.log(where)
 						if (['id', '_id'].includes(where[0])) {
 							where[0] = '_id';
 							where[2] = new ObjectID(where[2]);

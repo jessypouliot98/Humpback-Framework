@@ -44,9 +44,14 @@ class Humpback {
 	}
 
 	protected setupMiddlewares() {
+		this._app.options('*', cors());
+		this._app.use(function(req, res, next) {
+			res.header("Access-Control-Allow-Origin", "*");
+			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+			next();
+		});
 		this._app.use( bodyParser.urlencoded({ extended: false }) );
 		this._app.use( bodyParser.json() );
-		this._app.use( cors() );
 		this._app.use( HumpbackHttp.setup );
 	}
 

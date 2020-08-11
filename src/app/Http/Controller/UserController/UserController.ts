@@ -1,7 +1,23 @@
 import Controller from '../Controller'
 import User from '../../../Model/User/User'
+import Auth from '../../../Auth/Auth'
+import Hash from '../../../Hash/Hash'
 
 class UserController extends Controller {
+
+	public async login({ body }) {
+		const user = await User.where('email', '=', body.email).where('password', '=', Hash.make(body.password)).first();
+
+		if (!user) {
+			return;
+		}
+
+		return Auth.createToken(user);
+	}
+
+	public async authCheck() {
+		return Auth.validateToken();
+	}
 
 	public async index() {
 		return await User.offset(1).all();

@@ -52,7 +52,7 @@ class Model extends BaseModel {
 		return { ...this as any };
 	}
 
-	protected generateModel = (data: any): Model => {
+	protected generateModel = (data: any): this => {
 		const self: any = this.constructor;
 		return new self(data);
 	}
@@ -187,17 +187,27 @@ class Model extends BaseModel {
 
 	// Query
 
-	public async first(): Promise<Model|null> {
+	public async first(): Promise<this|null> {
 		const data = await this.db.first();
+
+		if (!data) {
+			return null;
+		}
+
 		return this.generateModel(data);
 	}
 
 	public async get(): Promise<Collection|null> {
 		const data = await this.db.get();
+
+		if (!data.length) {
+			return null;
+		}
+
 		return new Collection( ...data.map(this.generateModel) );
 	}
 
-	public async create(payload: payload): Promise<Model> {
+	public async create(payload: payload): Promise<this> {
 		const self: any = this.constructor;
 		const now = self.useTimestamps ? Date.now() : undefined;
 		const deleted = self.useSoftDeletes ? null : undefined;
@@ -210,11 +220,11 @@ class Model extends BaseModel {
 		}) );
 	}
 
-	public static async create(payload: payload): Promise<Model> {
+	public static async create(payload: payload) {
 		return new this().create(payload);
 	}
 
-	public async update(payload: payload): Promise<any> {
+	public async update(payload: payload): Promise<this> {
 		const self: any = this.constructor;
 		const now = self.useTimestamps ? Date.now() : undefined;
 
@@ -239,20 +249,19 @@ class Model extends BaseModel {
 		return await this.db.delete();
 	}
 
-	public async all(): Promise<Collection|null|any> {
-		const data = await this.db.get();
-		return new Collection( ...data.map(this.generateModel) );
+	public async all(): Promise<Collection|null> {
+		return this.get();
 	}
 
 	public static async all(): Promise<Collection|null> {
 		return await new this().all();
 	}
 
-	public async find(id: string|number): Promise<Model|null> {
+	public async find(id: string|number): Promise<this|null> {
 		return await this.where('id', '=', id).first();
 	}
 
-	public static async find(id: string|number): Promise<Model|null> {
+	public static async find(id: string|number) {
 		return await new this().find(id);
 	}
 
