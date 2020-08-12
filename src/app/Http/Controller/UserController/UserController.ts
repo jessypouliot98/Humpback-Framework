@@ -20,7 +20,7 @@ class UserController extends Controller {
 	}
 
 	public async index() {
-		return await User.offset(1).all();
+		return await User.all();
 	}
 
 	public async show({ params }) {
