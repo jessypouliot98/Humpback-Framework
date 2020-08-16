@@ -1,3 +1,3 @@
-import Humpback from '../src/App/Humpback/Humpback'
+import Humpback from './App/Humpback/Humpback'
 
 export default Humpback
