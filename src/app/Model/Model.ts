@@ -35,12 +35,15 @@ class Model extends BaseModel {
 		this.db.where(['id', '=', this._entries.id])
 	}
 
+	protected get self(): any {
+		return this.constructor as any;
+	}
+
 	protected get db(): Db {
 		if (!this._db) {
-			this._db = Db.collection((this.constructor as any).collection);
+			this._db = Db.collection(this.self.collection);
 
-			const self: any = this.constructor;
-			this._db.useSoftDeletes = self.useSoftDeletes;
+			this._db.useSoftDeletes = this.self.useSoftDeletes;
 		}
 
 		return this._db;
@@ -53,13 +56,11 @@ class Model extends BaseModel {
 	}
 
 	protected generateModel = (data: any): this => {
-		const self: any = this.constructor;
-		return new self(data);
+		return new this.self(data);
 	}
 
 	protected parsePayload = (payload: any): any => {
-		const self: any = this.constructor;
-		const fields = self.allColumns;
+		const fields = this.self.allColumns;
 
 		return Object.keys(payload).reduce((acc, key) => {
 			if ( !fields[key] ) {
@@ -208,9 +209,8 @@ class Model extends BaseModel {
 	}
 
 	public async create(payload: payload): Promise<this> {
-		const self: any = this.constructor;
-		const now = self.useTimestamps ? Date.now() : undefined;
-		const deleted = self.useSoftDeletes ? null : undefined;
+		const now = this.self.useTimestamps ? Date.now() : undefined;
+		const deleted = this.self.useSoftDeletes ? null : undefined;
 
 		return await this.db.create( this.parsePayload({
 			...payload,
@@ -225,8 +225,7 @@ class Model extends BaseModel {
 	}
 
 	public async update(payload: payload): Promise<this> {
-		const self: any = this.constructor;
-		const now = self.useTimestamps ? Date.now() : undefined;
+		const now = this.self.useTimestamps ? Date.now() : undefined;
 
 		return await this.db.update( this.parsePayload({
 			...payload,
@@ -235,8 +234,7 @@ class Model extends BaseModel {
 	}
 
 	public async delete(): Promise<any> {
-		const self: any = this.constructor;
-		const now = self.useTimestamps ? Date.now() : undefined;
+		const now = this.self.useTimestamps ? Date.now() : undefined;
 
 		return await this.db.update({ deletedAt: now });
 	}

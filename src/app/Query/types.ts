@@ -1,5 +1,3 @@
-import { ObjectID } from 'mongodb'
-
 export type connectionArgs = {
 	DB_HOST: string,
 	DB_PORT: string,

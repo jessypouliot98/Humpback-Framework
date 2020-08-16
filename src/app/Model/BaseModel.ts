@@ -1,28 +1,66 @@
+import * as DatabaseType from '../../Entities/DatabaseTypes'
+import * as InputType from '../../Entities/InputTypes'
+import { option } from '../../Entities/InputTypes/TypeBase'
+import { Timestamp } from 'mongodb'
+
+export type input = {
+	type: InputType.TypeBase,
+	match?: RegExp | RegExp[],
+	label?: string,
+	placeholder?: string,
+	className?: string,
+	style?: object,
+	width?: number | string,
+	options?: option[],
+}
+
+export type column = {
+	name: string,
+	type: DatabaseType.TypeBase,
+	input?: input,
+}
+
 abstract class BaseModel {
 
 	public static collection: string;
 
-	public static columns: object;
+	public static columns: column[];
 
 	public static useTimestamps = true;
 
 	public static useSoftDeletes = true;
 
 	public static get allColumns() {
-		const timestampColumns = this.useTimestamps ? {
-			createdAt: String,
-			updatedAt: String,
-		} : undefined;
+		const columns = this.columns;
 
-		const deleteColumns = this.useSoftDeletes ? {
-			deletedAt: String,
-		} : undefined;
-
-		return {
-			...this.columns,
-			...timestampColumns,
-			...deleteColumns
+		if (this.useTimestamps) {
+			columns.push({
+				name: 'createdAt',
+				type: DatabaseType.TypeTimestamp,
+				input: {
+					type: InputType.TypeDateTime,
+				},
+			});
+			columns.push({
+				name: 'updatedAt',
+				type: DatabaseType.TypeTimestamp,
+				input: {
+					type: InputType.TypeDateTime,
+				},
+			});
 		}
+
+		if (this.useSoftDeletes) {
+			columns.push({
+				name: 'deletedAt',
+				type: DatabaseType.TypeTimestamp,
+				input: {
+					type: InputType.TypeDateTime,
+				},
+			});
+		}
+
+		return columns;
 	}
 
 	public static guarded: string[] = [];
