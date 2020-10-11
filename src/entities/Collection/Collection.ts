@@ -1,4 +1,5 @@
 import Model from '../../App/Model/Model'
+import DumpAndDie from '../../utilities/DumpAndDie/DumpAndDie'
 
 class Collection extends Array<Model> {
 
@@ -25,6 +26,20 @@ class Collection extends Array<Model> {
 		return this.map(item => item.toObject());
 	}
 
+	public first() {
+		return this[0];
+	}
+
+	public skip(amount = 1) {
+		this.splice(0, amount);
+		return this;
+	}
+
+	public limit(amount = 1) {
+		this.splice(amount);
+		return this;
+	}
+
 	public async delete() {
 		this.forEach((item: Model) => {
 			item.delete();
@@ -39,6 +54,22 @@ class Collection extends Array<Model> {
 		});
 
 		return this;
+	}
+
+	public dump() {
+		return {
+			collection: this.map(value => {
+				if (typeof value.dump === 'function') {
+					return value.dump();
+				}
+
+				return value;
+			}),
+		};
+	}
+
+	public dd() {
+		DumpAndDie.call(this);
 	}
 
 }

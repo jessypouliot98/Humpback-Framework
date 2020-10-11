@@ -5,6 +5,7 @@ import Config from '../Config/Config'
 import state from './State'
 import { enumViewEngines } from '../../Entities/View/View'
 import { HumpbackHttp } from '../Http/Middleware'
+import DumpAndDie from '../../utilities/DumpAndDie/DumpAndDie'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import 'colors'
@@ -45,7 +46,7 @@ class Humpback {
 
 	protected setupMiddlewares() {
 		this._app.options('*', cors());
-		this._app.use(function(req, res, next) {
+		this._app.use((req, res, next) => {
 			res.header("Access-Control-Allow-Origin", "*");
 			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 			next();

@@ -2,6 +2,7 @@ import Controller from '../Controller'
 import User from '../../../Model/User/User'
 import Auth from '../../../Auth/Auth'
 import Hash from '../../../Hash/Hash'
+import DumpAndDie from '../../../../utilities/DumpAndDie/DumpAndDie';
 
 class UserController extends Controller {
 

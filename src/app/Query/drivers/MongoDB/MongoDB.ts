@@ -25,7 +25,8 @@ class MongoDB {
 	public static async connect({ DB_HOST, DB_PORT, DB_NAME, DB_USERNAME, DB_PASSWORD }: connectionArgs): Promise<MongoDB> {
 		try{
 			const auth = (DB_USERNAME && DB_PASSWORD) ? `${DB_USERNAME}:${DB_PASSWORD}@` : '';
-			const url = `mongodb://${auth}${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+			// const url = `mongodb://${auth}${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+			const url = `mongodb://${auth}${DB_HOST}:${DB_PORT}`;
 			const args = { useNewUrlParser: true, useUnifiedTopology: true };
 
 			const connection = await MongoClient.connect(url, args);

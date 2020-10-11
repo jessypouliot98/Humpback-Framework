@@ -1,7 +1,8 @@
-import BaseModel from './BaseModel'
+import BaseModel, { column } from './BaseModel'
 import Collection from '../../Entities/Collection/Collection'
 import Db from './Db/Db'
 import { payload, enumCompare } from '../Query/Query'
+import DumpAndDie from '../../utilities/DumpAndDie/DumpAndDie'
 
 class Model extends BaseModel {
 
@@ -53,6 +54,40 @@ class Model extends BaseModel {
 
 	public toObject() {
 		return { ...this as any };
+	}
+
+	public dump() {
+		const staticProperties = Object.getOwnPropertyNames(this.self).reduce((acc, property) => {
+			if (['length', 'prototype', 'name'].includes(property)) {
+				return acc;
+			}
+
+			switch (property) {
+				case 'columns':
+					acc[property] = this.self.allColumns.map((column: column) => column.name);
+					break;
+
+				default:
+					acc[property] = this.self[property];
+					break;
+			}
+
+			return acc;
+		}, {});
+
+		return {
+			model: {
+				model: this.self.name,
+				...staticProperties,
+				useTimestamps: this.self.useTimestamps,
+				useSoftDeletes: this.self.useSoftDeletes,
+				originals: this.toObject(),
+			}
+		};
+	}
+
+	public dd() {
+		DumpAndDie.call(this);
 	}
 
 	protected generateModel = (data: any): this => {

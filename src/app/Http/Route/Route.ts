@@ -2,6 +2,7 @@ import express, { Request as ExpressRequest, Response as ExpressResponse } from 
 import Request from '../Request/Request'
 import Response from '../Response/Response'
 import NoSuchMethodException from '../../../Exception/NoSuchMethodException/NoSuchMethodException'
+import DumpAndDie from '../../../utilities/DumpAndDie/DumpAndDie'
 
 export type enumServeMethods = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
@@ -35,6 +36,11 @@ class Route {
 
 				Response.send(data);
 			} catch(e){
+				if (e instanceof DumpAndDie) {
+					Response.send(e.content);
+					return;
+				}
+
 				console.error(e)
 				Response.send(e);
 			}

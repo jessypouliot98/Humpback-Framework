@@ -20,6 +20,17 @@ export type column = {
 	input?: input,
 }
 
+export type dispatchableEvents = {
+	creating?: any,
+	created?: any,
+	updating?: any,
+	udpated?: any,
+	deleting?: any,
+	deleted?: any,
+	saving?: any,
+	saved?: any,
+}
+
 abstract class BaseModel {
 
 	public static collection: string;
@@ -31,7 +42,7 @@ abstract class BaseModel {
 	public static useSoftDeletes = true;
 
 	public static get allColumns() {
-		const columns = this.columns;
+		const columns = [...this.columns];
 
 		if (this.useTimestamps) {
 			columns.push({
@@ -69,7 +80,7 @@ abstract class BaseModel {
 
 	public static cascadeDeletes: string[] = [];
 
-	public static dispatchesEvents = {};
+	public static dispatchesEvents: dispatchableEvents = {};
 
 }
 
