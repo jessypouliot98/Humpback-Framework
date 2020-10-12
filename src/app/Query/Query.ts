@@ -3,7 +3,7 @@ import Config from '../Config/Config'
 import MongoDB from './Drivers/MongoDB/MongoDB'
 import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
 
-export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains';
+export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains' | 'notContains' | 'regex';
 export type enumOrder =  'ASC' | 'DESC';
 
 export type whereArgs = [string, enumCompare, any];

@@ -136,7 +136,7 @@ class Model extends BaseModel {
 
 	// Select
 
-	public where(a: string, b: string|number|enumCompare, c?: string|number): this {
+	public where(a: string, b: enumCompare|any, c?: any|any[]): this {
 		let field: string,
 			condition: enumCompare,
 			value: string | number;
@@ -156,7 +156,7 @@ class Model extends BaseModel {
 		return this;
 	}
 
-	public static where(a: string, b: string|number|enumCompare, c?: string|number) {
+	public static where(a: string, b: enumCompare|any, c?: any|any[]) {
 		return new this().where(a, b, c);
 	}
 

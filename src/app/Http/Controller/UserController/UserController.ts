@@ -2,12 +2,14 @@ import Controller from '../Controller'
 import User from '../../../Model/User/User'
 import Auth from '../../../Auth/Auth'
 import Hash from '../../../Hash/Hash'
-import DumpAndDie from '../../../../utilities/DumpAndDie/DumpAndDie';
 
 class UserController extends Controller {
 
 	public async login({ body }) {
-		const user = await User.where('email', '=', body.email).where('password', '=', Hash.make(body.password)).first();
+		const user = await User
+			.where('email', '=', body.email)
+			.where('password', '=', Hash.make(body.password))
+			.first();
 
 		if (!user) {
 			return;

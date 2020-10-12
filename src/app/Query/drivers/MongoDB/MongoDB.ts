@@ -68,12 +68,41 @@ class MongoDB {
 						}
 
 						switch(where[1]){
+							case '=':
+								return { [where[0]]: where[2] };
+
 							case '!=':
 								return { [where[0]]: { $ne: where[2], $exists: true } }
 
-							case '=':
+							case 'in':
+								return { [where[0]]: { $in: where[2], $exists: true } }
+
+							case 'notIn':
+								return { [where[0]]: { $nin: where[2], $exists: true } }
+
+							case 'contains':
+								return { [where[0]]: { $regex: `.*${where[2]}.*`, $exists: true } }
+
+							case 'notContains':
+								return { [where[0]]: { $not: { $regex: `.*${where[2]}.*` }, $exists: true } }
+
+							case 'regex':
+								return { [where[0]]: { $regex: where[2], $exists: true } }
+
+							case '>=':
+								return { [where[0]]: { $gte: where[2], $exists: true } }
+
+							case '>':
+								return { [where[0]]: { $gt: where[2], $exists: true } }
+
+							case '<=':
+								return { [where[0]]: { $lte: where[2], $exists: true } }
+
+							case '<':
+								return { [where[0]]: { $lt: where[2], $exists: true } }
+
 							default:
-								return { [where[0]]: where[2] };
+								throw new Error(where[1] + ' is not a valid operator')
 						}
 					}
 
@@ -110,6 +139,8 @@ class MongoDB {
 
 	public async get(args: queryState): Promise<any[]> {
 		const { collection, where, limit, offset, order } = this.parseQueryState(args);
+
+		console.log(where);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');
