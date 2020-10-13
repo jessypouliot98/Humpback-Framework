@@ -3,12 +3,16 @@
 	"version": "0.3.2-beta",
 	"description": "A modern TypeScript server framework",
 	"main": "lib",
+	"bin": {
+		"humpback": "./cli/index.js"
+	},
 	"module": "lib",
 	"types": "lib",
 	"scripts": {
 		"start": "ts-node ./test/index.ts",
 		"dev": "tsc --watch",
-		"build": "tsc"
+		"build": "tsc",
+		"cli": "./cli/index.js"
 	},
 	"author": "Jessyp98",
 	"repository": {
@@ -31,9 +35,11 @@
 	"devDependencies": {
 		"@types/dotenv": "^8.2.0",
 		"@types/express": "^4.17.7",
+		"@types/faker": "^5.1.2",
 		"@types/jsonwebtoken": "^8.5.0",
 		"@types/mongodb": "^3.5.25",
 		"@types/node": "^14.0.27",
+		"faker": "^5.1.0",
 		"typescript": "^3.9.7"
 	},
 	"bugs": {

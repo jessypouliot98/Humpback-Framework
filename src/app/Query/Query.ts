@@ -44,9 +44,12 @@ class Query {
 	}
 
 	protected async connect(): Promise<void> {
-		if( Humpback.state.db.connection === null ){
+		if( Humpback.state === undefined || Humpback.state.db.connection === null ){
 			this._db = await MongoDB.connect( Config.db );
-			Humpback.state.db.connection = this._db.connection;
+
+			if (Humpback.state !== undefined) {
+				Humpback.state.db.connection = this._db.connection;
+			}
 		} else {
 			this._db = await MongoDB.restore( Humpback.state.db.connection, Config.db.DB_NAME );
 		}

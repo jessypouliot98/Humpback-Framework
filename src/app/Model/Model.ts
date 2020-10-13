@@ -3,6 +3,7 @@ import Collection from '../../Entities/Collection/Collection'
 import Db from './Db/Db'
 import { payload, enumCompare } from '../Query/Query'
 import DumpAndDie from '../../utilities/DumpAndDie/DumpAndDie'
+import Factory from '../Factory/Factory'
 
 class Model extends BaseModel {
 
@@ -56,6 +57,10 @@ class Model extends BaseModel {
 		return { ...this as any };
 	}
 
+	public static factory(count: number = 1) {
+		return new Factory((this as any), count);
+	}
+
 	public dump() {
 		const staticProperties = Object.getOwnPropertyNames(this.self).reduce((acc, property) => {
 			if (['length', 'prototype', 'name'].includes(property)) {
@@ -98,11 +103,16 @@ class Model extends BaseModel {
 		const fields = this.self.allColumns;
 
 		return Object.keys(payload).reduce((acc, key) => {
-			if ( !fields[key] ) {
+			if ( !fields.some(field => field.name === key) ) {
 				return acc;
 			}
 
-			acc[key] = payload[key];
+			if (typeof payload[key] === 'function') {
+				acc[key] = payload[key]();
+			} else {
+				acc[key] = payload[key];
+			}
+
 
 			return acc;
 		}, {});
@@ -245,13 +255,13 @@ class Model extends BaseModel {
 
 	public async create(payload: payload): Promise<this> {
 		const now = this.self.useTimestamps ? Date.now() : undefined;
-		const deleted = this.self.useSoftDeletes ? null : undefined;
+		const deletedAt = this.self.useSoftDeletes ? null : undefined;
 
 		return await this.db.create( this.parsePayload({
 			...payload,
 			createdAt: now,
 			updatedAt: now,
-			deletedAt: deleted,
+			deletedAt,
 		}) );
 	}
 
