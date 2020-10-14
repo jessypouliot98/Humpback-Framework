@@ -8,6 +8,9 @@ switch( command ){
 		require('./seed').default(params);
 		break;
 
+	case 'migrate':
+		require('./migrate').default(params);
+
 	default:
 		console.log(`No commands found for ${command}`);
 		break;
