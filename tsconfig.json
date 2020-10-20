@@ -24,7 +24,7 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"forceConsistentCasingInFileNames": false
+		"experimentalDecorators": true
 	},
 	"exclude": [
 		"node_modules",

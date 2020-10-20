@@ -1,5 +1,5 @@
 import Model from '../Model'
-import * as DatabaseType from '../../../Entities/DatabaseTypes'
+import * as DatabaseType from '../../../Database/Types/Types'
 import * as InputType from '../../../Entities/InputTypes'
 
 class Page extends Model {
@@ -9,25 +9,25 @@ class Page extends Model {
 	public static columns = [
 		{
 			name: 'title',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		}, {
 			name: 'slug',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		},{
 			name: 'excerpt',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		},{
 			name: 'content',
-			type: DatabaseType.TypeObject,
+			type: DatabaseType.Object,
 			input: {
 				type: InputType.TypeString,
 			},

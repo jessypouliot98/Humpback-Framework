@@ -1,4 +1,5 @@
-import * as DatabaseType from '../../Entities/DatabaseTypes'
+import BaseDatabaseType from '../../Database/Types/Base'
+import * as DatabaseType from '../../Database/Types/Types'
 import * as InputType from '../../Entities/InputTypes'
 import { option } from '../../Entities/InputTypes/TypeBase'
 import { Timestamp } from 'mongodb'
@@ -16,7 +17,7 @@ export type input = {
 
 export type column = {
 	name: string,
-	type: DatabaseType.TypeBase,
+	type: BaseDatabaseType,
 	input?: input,
 }
 
@@ -47,14 +48,14 @@ abstract class BaseModel {
 		if (this.useTimestamps) {
 			columns.push({
 				name: 'createdAt',
-				type: DatabaseType.TypeTimestamp,
+				type: DatabaseType.Timestamp,
 				input: {
 					type: InputType.TypeDateTime,
 				},
 			});
 			columns.push({
 				name: 'updatedAt',
-				type: DatabaseType.TypeTimestamp,
+				type: DatabaseType.Timestamp,
 				input: {
 					type: InputType.TypeDateTime,
 				},
@@ -64,7 +65,7 @@ abstract class BaseModel {
 		if (this.useSoftDeletes) {
 			columns.push({
 				name: 'deletedAt',
-				type: DatabaseType.TypeTimestamp,
+				type: DatabaseType.Timestamp,
 				input: {
 					type: InputType.TypeDateTime,
 				},

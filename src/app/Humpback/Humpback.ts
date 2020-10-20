@@ -1,11 +1,10 @@
 import express from 'express'
 import path from 'path'
-import Route from '../Http/Route/Route'
-import Config from '../Config/Config'
+import Route from '../../Http/Route/Route'
+import Config from '../../Support/Config/Config'
 import state from './State'
-import { enumViewEngines } from '../../Entities/View/View'
-import { HumpbackHttp } from '../Http/Middleware'
-import DumpAndDie from '../../utilities/DumpAndDie/DumpAndDie'
+import { viewEngines } from '../../Entities/View/View'
+import HumpbackHttp from '../../Http/Middleware/HumpbackHttp/HumpbackHttp'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import 'colors'
@@ -66,8 +65,11 @@ class Humpback {
 		})
 	}
 
-	public setViewEngine(viewEngine: enumViewEngines = null, viewDirectory: string = path.join(process.cwd(), '/resources/views')) {
-		if (!viewEngine) {
+	public setViewEngine(
+		viewEngine: viewEngines|null = viewEngines.null,
+		viewDirectory: string = path.join(process.cwd(), '/resources/views')
+	) {
+		if (!viewEngine || viewEngine === viewEngines.null) {
 			return;
 		}
 

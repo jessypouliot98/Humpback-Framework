@@ -1,5 +1,5 @@
 import Model from '../Model'
-import * as DatabaseType from '../../../Entities/DatabaseTypes'
+import * as DatabaseType from '../../../Database/Types/Types'
 import * as InputType from '../../../Entities/InputTypes'
 
 class User extends Model {
@@ -9,31 +9,31 @@ class User extends Model {
 	public static columns = [
 		{
 			name: 'userName',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		}, {
 			name: 'firstName',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		}, {
 			name: 'lastName',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeString,
 			},
 		}, {
 			name: 'email',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypeEmail,
 			},
 		}, {
 			name: 'password',
-			type: DatabaseType.TypeString,
+			type: DatabaseType.String,
 			input: {
 				type: InputType.TypePassword,
 			},

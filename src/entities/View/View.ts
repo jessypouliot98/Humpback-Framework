@@ -1,4 +1,7 @@
-export type enumViewEngines = null | 'ejs';
+export enum viewEngines {
+	ejs = 'ejs',
+	null = 'null',
+};
 
 class View extends String {
 
