@@ -1,17 +1,20 @@
-import Humpback from '../../App/Humpback/Humpback'
+import Driver from '../Driver/Driver'
+import MongoDB from '../Driver/MongoDB/MongoDB'
 import Config from '../../Support/Config/Config'
-import MongoDB from './Drivers/MongoDB/MongoDB'
-import DatabaseException from '../../Exception/DatabaseException/DatabaseException'
 
 export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains' | 'notContains' | 'regex';
 export type enumOrder =  'ASC' | 'DESC';
 
-export type whereArgs = [string, enumCompare, any];
+export type whereArgs = {
+    column: string,
+    operator: enumCompare,
+    value: any,
+}
 
 export type queryState = {
 	collection: string|null,
-	select: string|string[],
-	where: whereArgs[]|null,
+	select: string[]|null,
+	where: Array<whereArgs[]>|null,
 	order: [string, enumOrder]|null,
 	limit: number|null,
 	offset: number,
@@ -21,69 +24,116 @@ export type payload = object;
 
 class Query {
 
-	protected _db: MongoDB|null = null;
+    protected _dataMapper?: unknown;
 
 	protected _state: queryState = {
 		collection: null,
-		select: '*',
+		select: null,
 		where: null,
 		order: null,
 		limit: 0,
 		offset: 0,
 	}
 
-	constructor(state: queryState){
-		this._state = { ...this._state, ...state };
+    protected async loadDriver(): Promise<Driver> {
+        let driver: Driver;
+
+        switch (Config.db.DB_DRIVER) {
+            case 'mongodb':
+            default:
+                driver = await new MongoDB().connect(Config.db);
+        }
+
+        return driver.setState(this._state);
+    }
+
+    public setDataMapper<T = unknown>(dataMapper: (data: any) => T) {
+        this._dataMapper = dataMapper;
+    }
+
+	public setCollection(collectionName: string) {
+		this._state.collection = collectionName;
 	}
 
-	protected get db(): MongoDB {
-		if(this._db === null)
-			throw DatabaseException.notInitialized();
-
-		return (this._db as MongoDB);
+	public setSelect(columns: string[]) {
+		this._state.select = columns;
 	}
 
-	protected async connect(): Promise<void> {
-		if( Humpback.state === undefined || Humpback.state.db.connection === null ){
-			this._db = await MongoDB.connect( Config.db );
-
-			if (Humpback.state !== undefined) {
-				Humpback.state.db.connection = this._db.connection;
-			}
-		} else {
-			this._db = await MongoDB.restore( Humpback.state.db.connection, Config.db.DB_NAME );
+	public setWhere(where: whereArgs) {
+		if (this._state.where === null) {
+			this._state.where = [
+				[
+					where,
+				]
+			];
+			return;
 		}
+
+		const [...queryWhere] = this._state.where;
+
+		const currentWhere = queryWhere.pop() as whereArgs[];
+
+		this._state.where = [
+			...queryWhere,
+			[
+				...currentWhere,
+				where,
+			]
+		];
 	}
 
-	public async first(): Promise<any> {
-		await this.connect();
+	public setOrWhere(where: whereArgs) {
+		if (this._state.where === null) {
+			this._state.where = [
+				[
+					where,
+				]
+			];
+			return;
+		}
 
-		return this.db.first(this._state);
+		const [...queryWhere] = this._state.where;
+
+		this._state.where = [
+			...queryWhere,
+			[
+				where,
+			]
+		];
 	}
 
-	public async get(): Promise<any[]> {
-		await this.connect();
+    public setOffset(offset: number = 15) {
+        this._state.offset = offset;
+    }
 
-		return this.db.get(this._state);
-	}
+    public setLimit(limit: number = 15) {
+        this._state.limit = limit;
+    }
 
-	public async create(payload: any): Promise<any[]> {
-		await this.connect();
+    public async first() {
+        const driver = await this.loadDriver();
 
-		return this.db.create(this._state, payload);
-	}
+        return driver.first();
+    }
 
-	public async update(payload: any): Promise<any[]> {
-		await this.connect();
+    public async get() {
+        const driver = await this.loadDriver();
 
-		return this.db.update(this._state, payload);
-	}
+        return driver.get();
+    }
 
-	public async delete(): Promise<any[]> {
-		await this.connect();
+    public async count() {
+        const driver = await this.loadDriver();
 
-		return this.db.delete(this._state)
-	}
+        return driver.count();
+    }
+
+    public async exists() {
+        const driver = await this.loadDriver();
+        const count = await driver.count();
+
+        return count > 0;
+    }
 
 }
 

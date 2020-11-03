@@ -1,35 +1,18 @@
 import BaseModel, { column } from './BaseModel'
-import Db from '../../Database/Db/Db'
 import DumpAndDie from '../../Support/DumpAndDie/DumpAndDie'
 import Factory from '../../Support/Factory/Factory'
+import Db from '../../Database/Db/Db'
 
-function classDecorator<T extends { new (...args: any[]): {} }>(
-  constructor: T
-) {
-  return class extends constructor {
-    newProperty = "new property";
-    hello = "override";
-  };
-}
-
-@classDecorator
 class Model extends BaseModel {
+
+	public constructor(data?: object) {
+		super();
+		console.log(data);
+	}
 
 	protected get self(): typeof Model {
 		return this.constructor as typeof Model;
 	}
-
-	public static query(): Db {
-		return new Db(this.collection);
-	}
-
-	public delete() {
-
-    }
-
-    public forceDelete() {
-
-    }
 
 	// Helpers
 
@@ -74,6 +57,19 @@ class Model extends BaseModel {
 	public dd() {
 		DumpAndDie.call(this);
 	}
+
+    // Model query
+
+    public static query(): Db {
+		// .setDataMapper((data: any) => new this(data));
+        return Db.collection(this.collection);
+    }
+
+    public async delete(): Promise<boolean> {
+        return await Db.collection(this.self.collection)
+            .where('id', '=', 'this.id')
+            .delete();
+    }
 
 }
 

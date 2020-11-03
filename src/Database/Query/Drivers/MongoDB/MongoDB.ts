@@ -50,83 +50,6 @@ class MongoDB {
 		this.constructor().disconnect(this.connection);
 	}
 
-	protected parseQueryState(args: queryState): mongoState {
-		const parsedArgs: any = Object.keys({...args}).reduce((acc, key) => {
-			let prop = args[key];
-
-			if ( prop === null ) {
-				return acc;
-			}
-
-			switch(key){
-
-				case 'where':
-					const formatWhere = (where: whereArgs) => {
-						if (['id', '_id'].includes(where[0])) {
-							where[0] = '_id';
-							where[2] = new ObjectID(where[2]);
-						}
-
-						switch(where[1]){
-							case '=':
-								return { [where[0]]: where[2] };
-
-							case '!=':
-								return { [where[0]]: { $ne: where[2], $exists: true } }
-
-							case 'in':
-								return { [where[0]]: { $in: where[2], $exists: true } }
-
-							case 'notIn':
-								return { [where[0]]: { $nin: where[2], $exists: true } }
-
-							case 'contains':
-								return { [where[0]]: { $regex: `.*${where[2]}.*`, $exists: true } }
-
-							case 'notContains':
-								return { [where[0]]: { $not: { $regex: `.*${where[2]}.*` }, $exists: true } }
-
-							case 'regex':
-								return { [where[0]]: { $regex: where[2], $exists: true } }
-
-							case '>=':
-								return { [where[0]]: { $gte: where[2], $exists: true } }
-
-							case '>':
-								return { [where[0]]: { $gt: where[2], $exists: true } }
-
-							case '<=':
-								return { [where[0]]: { $lte: where[2], $exists: true } }
-
-							case '<':
-								return { [where[0]]: { $lt: where[2], $exists: true } }
-
-							default:
-								throw new Error(where[1] + ' is not a valid operator')
-						}
-					}
-
-					if (prop.length > 1) {
-						acc[key] = {
-							$and: prop.map(formatWhere)
-						}
-					} else {
-						acc[key] = formatWhere(prop[0]);
-					}
-					break;
-
-				default:
-					acc[key] = prop;
-					break;
-
-			}
-
-			return acc;
-		}, {});
-
-		return (parsedArgs as mongoState);
-	}
-
 	public async first(args: queryState): Promise<any> {
 		const { collection, where } = this.parseQueryState(args);
 
@@ -139,8 +62,6 @@ class MongoDB {
 
 	public async get(args: queryState): Promise<any[]> {
 		const { collection, where, limit, offset, order } = this.parseQueryState(args);
-
-		console.log(where);
 
 		if( collection === null ){
 			throw NullException.noValueFor('collection', 'string');

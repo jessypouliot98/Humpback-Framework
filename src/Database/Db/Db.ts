@@ -1,23 +1,15 @@
-import { enumCompare, enumOrder } from '../Query/Query'
+import Query, { whereArgs, enumCompare, enumOrder } from '../Query/Query'
 
-export type QueryState = {
-    collection: string,
-    where: any[]|null,
-}
-
-export type whereParams = [string, enumCompare, any] | [string, any]
-export type whereArgs = {
-    column: string,
-    operator: enumCompare,
-    value?: any,
-}
+export type whereParams = [string, enumCompare, any]
+export type whereIsParams = [string, any]
 
 export type payload = object;
 
-function getWhereArgs(...params: whereParams) {
+function getWhereArgs(...params: whereParams | whereIsParams): whereArgs {
     const args: whereArgs = {
         column: params[0],
         operator: '=',
+        value: null,
     };
 
     if (params.length === 2) {
@@ -34,34 +26,44 @@ function getWhereArgs(...params: whereParams) {
 
 class Db {
 
-    protected _collection?: string;
+    protected _query: Query;
 
-    public constructor(collectionName: string) {
-        this._collection = collectionName;
+    public constructor(collectionName?: string) {
+        this._query = new Query();
+
+        if (collectionName) {
+            this._query.setCollection(collectionName);
+        }
     }
 
     public static collection(collectionName: string) {
         return new this(collectionName);
     }
 
+    public collection(collectionName: string) {
+        this._query.setCollection(collectionName);
+
+        return this;
+    }
+
     // Retrieving
 
     public select(columns: string|string[]) {
-        // this.query.setSelect(columns);
+        this._query.setSelect(Array.isArray(columns) ? columns : [columns]);
 
         return this;
     }
 
-    public distinct(columns: string|string[]) {
-        // this.query.setDistinct(columns);
-
-        return this;
-    }
+    // public distinct(columns: string|string[]) {
+    //     // this.query.setDistinct(columns);
+    //
+    //     return this;
+    // }
 
     public where(...params: whereParams) {
         const args = getWhereArgs(...params);
 
-        // this.query.setWhere(args);
+        this._query.setWhere(args);
 
         return this;
     }
@@ -69,19 +71,19 @@ class Db {
     public orWhere(...params: whereParams) {
         const args = getWhereArgs(...params);
 
-        // this.query.setOrWhere(args);
+        this._query.setOrWhere(args);
 
         return this;
     }
 
     public offset(offset: number = 5) {
-        // this.query.setOffset(offset);
+        this._query.setOffset(offset);
 
         return this;
     }
 
     public limit(limit: number = 15) {
-        // this.query.setLimit(limit);
+        this._query.setLimit(limit);
 
         return this;
     }
@@ -107,15 +109,15 @@ class Db {
     // CRUD
 
     public async get(): Promise<(any[]|null)> {
-        // const data = await this.query.get();
+        const data = await this._query.get();
 
-        return [];
+        return data;
     }
 
     public async first(): Promise<(any|null)> {
-        // const data = await this.query.first();
+        const data = await this._query.first();
 
-        return {};
+        return data;
     }
 
     public async newest(): Promise<(any|null)> {
@@ -135,33 +137,55 @@ class Db {
     }
 
     public async find(id: string|number): Promise<(any|null)> {
-        // this.where('id', '=', id);
+        this.where('id', '=', id);
 
-        // const data = await this.query.first();
+        const data = await this._query.first() as any;
 
-        return {};
+        return data;
     }
 
     public async count(): Promise<number> {
-        // const data = await this.query.count();
-
-        return 0;
+        return this._query.count();
     }
 
     public async pluck(column: string): Promise<any|null> {
-        // const data = await this.query.pluck(column);
+        const data = await this.select([column]).get();
 
-        return [];
+        if (!data) {
+            return null;
+        }
+
+        return data.map(value => value[column]);
     }
 
-    public async chunk(quantity: number = 1000, callback: () => (Promise<void>|void)): Promise<void> {
-        // TODO
+    public async chunk<T = object>(callback: (items: Array<T>) => (Promise<void>|void), quantity: number = 1000): Promise<void> {
+        return new Promise<void>( async(resolve, _reject) => {
+            const count = await this.count();
+
+            for (let i = 0; i < count; i += quantity) {
+                const items: any = await this.limit(quantity).offset(i / quantity * quantity).get();
+
+                await callback(items);
+            }
+
+            resolve();
+        });
+    }
+
+    public async each<T = object>(callback: (item: T) => (Promise<void>|void), quantity: number = 1000): Promise<void> {
+        return new Promise<void>(async(resolve, _reject) => {
+            this.chunk(async(items: Array<T>) => {
+                for (const item of items) {
+                    await callback(item);
+                }
+            }, quantity);
+
+            resolve();
+        });
     }
 
     public async exists() {
-        const count = await this.count();
-
-        return count === 0;
+        return this._query.exists();
     }
 
     public async insert(payload: payload): Promise<boolean> {
