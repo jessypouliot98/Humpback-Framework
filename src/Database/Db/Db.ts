@@ -68,10 +68,22 @@ class Db {
         return this;
     }
 
+    public whereRaw(raw: any) {
+        this._query.setWhere({ raw });
+
+        return this;
+    }
+
     public orWhere(...params: whereParams) {
         const args = getWhereArgs(...params);
 
         this._query.setOrWhere(args);
+
+        return this;
+    }
+
+    public orWhereRaw(raw: any) {
+        this._query.setOrWhere({ raw });
 
         return this;
     }
@@ -220,6 +232,22 @@ class Db {
         // this.query.forceDelete();
 
         return true;
+    }
+
+    public async getSchema(): Promise<any> {
+        return this._query.getSchema();
+    }
+
+    public async createSchema(schema): Promise<boolean> {
+        return this._query.createSchema(schema);
+    }
+
+    public async updateSchema(schema): Promise<boolean> {
+        return this._query.updateSchema(schema);
+    }
+
+    public async deleteSchema(): Promise<boolean> {
+        return this._query.deleteSchema();
     }
 
 }

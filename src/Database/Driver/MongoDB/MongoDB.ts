@@ -1,6 +1,7 @@
 import Driver from '../Driver'
-import { queryState, whereArgs, enumOrder } from '../../Query/Query'
+import { queryState, whereArgs, whereRaw, enumOrder } from '../../Query/Query'
 import { MongoClient, ObjectID, Db, FilterQuery } from 'mongodb'
+import { getValidator } from './helpers'
 
 export type mongoState = {
 	collection: string,
@@ -11,7 +12,13 @@ export type mongoState = {
 	offset?: number,
 };
 
-function formatWhere(where: whereArgs): object {
+function formatWhere(whereCondition: whereArgs | whereRaw): object {
+	if (typeof (whereCondition as whereRaw).raw === 'object') {
+		return (whereCondition as whereRaw).raw as object;
+	}
+
+	const where = whereCondition as whereArgs;
+
 	if (['id', '_id'].includes(where.column)) {
 		where.column = '_id';
 
@@ -150,6 +157,10 @@ class MongoDB extends Driver {
                 url = `${url}/${DB_NAME}`;
             }
 
+			// if (true) { // @TODO Remove and find a better fix
+			// 	url += '?authSource=admin';
+			// }
+
 			const args = { useNewUrlParser: true, useUnifiedTopology: true };
 
 			this._client = await MongoClient.connect(url, args);
@@ -211,6 +222,48 @@ class MongoDB extends Driver {
     public async delete() {
         return true;
     }
+
+	public async getSchema() {
+		const { collection } = this.state;
+
+		const infos = await this.db.admin().command({
+			validate: collection,
+			full: true,
+		});
+
+		return infos;
+	}
+
+	public async createSchema(schema) {
+		const { collection } = this.state;
+
+		await this.db.createCollection(collection, {
+			validator: getValidator(schema),
+			validationLevel: 'strict',
+			validationAction: 'error',
+		});
+
+		return true;
+	}
+
+	public async updateSchema(schema) {
+		const { collection } = this.state;
+
+		await this.db.command({
+			collMod: collection,
+			validator: { $jsonSchema: getValidator(schema) },
+			validationLevel: 'strict',
+			validationAction: 'error',
+		});
+
+		return true;
+	}
+
+	public async deleteSchema() {
+		const { collection } = this.state;
+
+		return await this.db.dropCollection(collection);
+	}
 
 }
 

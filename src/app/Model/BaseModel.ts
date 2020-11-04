@@ -18,6 +18,8 @@ export type input = {
 export type column = {
 	name: string,
 	type: BaseDatabaseType,
+	defaultValue?: any,
+	required?: boolean,
 	input?: input,
 }
 

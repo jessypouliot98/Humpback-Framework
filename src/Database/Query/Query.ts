@@ -2,7 +2,7 @@ import Driver from '../Driver/Driver'
 import MongoDB from '../Driver/MongoDB/MongoDB'
 import Config from '../../Support/Config/Config'
 
-export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains' | 'notContains' | 'regex';
+export type enumCompare = '=' | '!=' | '>' | '<' | '>=' | '<=' | 'in' | 'notIn' | 'contains' | 'notContains' | 'regex' | 'raw';
 export type enumOrder =  'ASC' | 'DESC';
 
 export type whereArgs = {
@@ -11,10 +11,14 @@ export type whereArgs = {
     value: any,
 }
 
+export type whereRaw = {
+    raw: any
+}
+
 export type queryState = {
 	collection: string|null,
 	select: string[]|null,
-	where: Array<whereArgs[]>|null,
+	where: Array<Array<whereArgs|whereRaw>>|null,
 	order: [string, enumOrder]|null,
 	limit: number|null,
 	offset: number,
@@ -59,7 +63,7 @@ class Query {
 		this._state.select = columns;
 	}
 
-	public setWhere(where: whereArgs) {
+	public setWhere(where: whereArgs | whereRaw) {
 		if (this._state.where === null) {
 			this._state.where = [
 				[
@@ -82,7 +86,7 @@ class Query {
 		];
 	}
 
-	public setOrWhere(where: whereArgs) {
+	public setOrWhere(where: whereArgs | whereRaw) {
 		if (this._state.where === null) {
 			this._state.where = [
 				[
@@ -133,6 +137,30 @@ class Query {
         const count = await driver.count();
 
         return count > 0;
+    }
+
+    public async getSchema() {
+        const driver = await this.loadDriver();
+
+        return driver.getSchema();
+    }
+
+    public async createSchema(schema) {
+        const driver = await this.loadDriver();
+
+        return driver.createSchema(schema)
+    }
+
+    public async updateSchema(schema) {
+        const driver = await this.loadDriver();
+
+        return driver.updateSchema(schema)
+    }
+
+    public async deleteSchema() {
+        const driver = await this.loadDriver();
+
+        return driver.deleteSchema()
     }
 
 }

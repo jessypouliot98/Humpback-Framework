@@ -34,6 +34,14 @@ abstract class Driver {
 
     abstract async delete(): Promise<any>
 
+	abstract async getSchema(): Promise<any>
+
+	abstract async createSchema(schema): Promise<boolean>
+
+	abstract async updateSchema(schema): Promise<boolean>
+
+	abstract async deleteSchema(): Promise<boolean>
+
 }
 
 export default Driver
