@@ -1,6 +1,6 @@
 import Driver from '../Driver'
 import { queryState, whereArgs, whereRaw, enumOrder } from '../../Query/Query'
-import { MongoClient, ObjectID, Db, FilterQuery } from 'mongodb'
+import { MongoClient, ObjectID, Db, FilterQuery, InsertOneWriteOpResult } from 'mongodb'
 import { getValidator } from './helpers'
 
 export type mongoState = {
@@ -20,11 +20,13 @@ function formatWhere(whereCondition: whereArgs | whereRaw): object {
 	const where = whereCondition as whereArgs;
 
 	if (['id', '_id'].includes(where.column)) {
+		const getObjectID = (id: any) => id instanceof ObjectID ? id : new ObjectID(id);
+
 		where.column = '_id';
 
 		where.value = Array.isArray(where.value) ?
-			where.value.map(v => new ObjectID(v)) :
-			new ObjectID(where.value);
+			where.value.map(getObjectID) :
+				getObjectID(where.value)
 	}
 
 	switch(where.operator){
@@ -96,6 +98,33 @@ class MongoDB extends Driver {
 
 		return whereArgs.reduce(orWheres, { $or: [] });
     }
+
+	protected parseOp(op: any): object {
+		return Object.entries(op).reduce<any>((data, [key, value]) => {
+			switch (key) {
+				case '_id':
+					data['id'] = value;
+					break;
+
+				default:
+					data[key] = value;
+					break;
+			}
+
+			return data;
+		}, {});
+	}
+
+	protected parseResponseObjectID(value: any) {
+		const data = { ...value };
+
+		if (data._id) {
+			data.id = data._id;
+			delete data._id;
+		}
+
+		return data;
+	};
 
 	protected get client(): MongoClient {
 		if (!this._client) {
@@ -176,7 +205,9 @@ class MongoDB extends Driver {
     public async first(): Promise<any> {
 		const { collection, where } = this.state;
 
-		return this.db.collection(collection).findOne(where);
+		const value = await this.db.collection(collection).findOne(where);
+
+		return this.parseResponseObjectID(value);
 	}
 
     public async get(): Promise<any> {
@@ -192,7 +223,9 @@ class MongoDB extends Driver {
 			query = query.skip(offset);
 		}
 
-		return query.toArray();
+		const values = await query.toArray();
+
+		return values.map(this.parseResponseObjectID);
     }
 
     public async count() {
@@ -211,16 +244,32 @@ class MongoDB extends Driver {
 		return query.count();
     }
 
-    public async store() {
-        return true;
+    public async store(payload: any) {
+		const { collection } = this.state;
+
+		let query = this.db.collection(collection);
+
+		const resp = await query.insertOne(payload);
+
+		const [op] = resp.ops;
+
+		return this.parseOp(op)
     }
 
-    public async update() {
-        return true;
+    public async update(payload: any) {
+		const { collection, where } = this.state;
+
+		let query = this.db.collection(collection);
+
+		return query.updateMany({ userName: 'jessyp98' }, { bob: 'bob' });
     }
 
     public async delete() {
-        return true;
+		const { collection, where } = this.state;
+
+		let query = this.db.collection(collection);
+
+		return query.deleteMany(where);
     }
 
 	public async getSchema() {
@@ -234,29 +283,37 @@ class MongoDB extends Driver {
 		return infos;
 	}
 
-	public async createSchema(schema) {
+	public async createSchema(schema: any) {
 		const { collection } = this.state;
 
-		await this.db.createCollection(collection, {
-			validator: getValidator(schema),
-			validationLevel: 'strict',
-			validationAction: 'error',
-		});
+		try {
+			await this.db.createCollection(collection, {
+				validator: getValidator(schema),
+				validationLevel: 'strict',
+				validationAction: 'error',
+			});
 
-		return true;
+			return true;
+		} catch(_error) {
+			return false;
+		}
 	}
 
-	public async updateSchema(schema) {
+	public async updateSchema(schema: any) {
 		const { collection } = this.state;
 
-		await this.db.command({
-			collMod: collection,
-			validator: { $jsonSchema: getValidator(schema) },
-			validationLevel: 'strict',
-			validationAction: 'error',
-		});
+		try {
+			await this.db.command({
+				collMod: collection,
+				validator: { $jsonSchema: getValidator(schema) },
+				validationLevel: 'strict',
+				validationAction: 'error',
+			});
 
-		return true;
+			return true;
+		} catch(_error) {
+			return false;
+		}
 	}
 
 	public async deleteSchema() {

@@ -1,46 +1,36 @@
-import Model from '../Model'
+import Model, { defineColumn } from '../Model'
+import Hash from '../../../Support/Hash/Hash'
 import * as DatabaseType from '../../../Database/Types/Types'
-import * as InputType from '../../../Entities/InputTypes'
+
+function passwordFilter(value: unknown): string | null {
+	if (typeof value !== 'string') {
+		return null;
+	}
+
+	return Hash.make(value);
+}
 
 class User extends Model {
 
 	public static collection = 'users';
 
-	public static columns = [
-		{
-			name: 'userName',
-			type: DatabaseType.String,
-			input: {
-				type: InputType.TypeString,
-			},
-		}, {
-			name: 'firstName',
-			type: DatabaseType.String,
-			input: {
-				type: InputType.TypeString,
-			},
-		}, {
-			name: 'lastName',
-			type: DatabaseType.String,
-			input: {
-				type: InputType.TypeString,
-			},
-		}, {
-			name: 'email',
-			type: DatabaseType.String,
-			input: {
-				type: InputType.TypeEmail,
-			},
-		}, {
-			name: 'password',
-			type: DatabaseType.String,
-			input: {
-				type: InputType.TypePassword,
-			},
-		},
-	]
+	@defineColumn({ type: DatabaseType.Id })
+	public id?: string;
 
-	public static hidden = ['password'];
+	@defineColumn({ type: DatabaseType.String })
+	public userName?: string;
+
+	@defineColumn({ type: DatabaseType.String })
+	public firstName?: string;
+
+	@defineColumn({ type: DatabaseType.String })
+	public lastName?: string;
+
+	@defineColumn({ type: DatabaseType.String })
+	public email?: string;
+
+	@defineColumn({ type: DatabaseType.String, filter: passwordFilter })
+	public password?: string;
 
 }
 

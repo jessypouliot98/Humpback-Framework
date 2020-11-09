@@ -28,9 +28,9 @@ abstract class Driver {
 
     abstract async count(): Promise<number>
 
-    abstract async store(): Promise<any>
+    abstract async store(payload: any): Promise<object>
 
-    abstract async update(): Promise<any>
+    abstract async update(payload: any): Promise<object>
 
     abstract async delete(): Promise<any>
 

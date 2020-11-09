@@ -139,6 +139,24 @@ class Query {
         return count > 0;
     }
 
+    public async store(payload: any) {
+        const driver = await this.loadDriver();
+
+        return driver.store(payload);
+    }
+
+    public async update(payload: any) {
+        const driver = await this.loadDriver();
+
+        return driver.update(payload);
+    }
+
+    public async delete() {
+        const driver = await this.loadDriver();
+
+        return driver.delete();
+    }
+
     public async getSchema() {
         const driver = await this.loadDriver();
 

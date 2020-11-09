@@ -4,13 +4,13 @@ import Db from '../Db/Db'
 class Migrator {
 
     public static getModelSchema(model: typeof Model) {
-        const columns = model.allColumns;
+        const columns = model.getColumns();
 
         const schema = columns.map(column => {
             return {
                 name: column.name,
                 type: column.type,
-                required: !column.required ? false : true,
+                required: column.nullable ? false : true,
                 defaultValue: column.defaultValue || null,
             }
         });

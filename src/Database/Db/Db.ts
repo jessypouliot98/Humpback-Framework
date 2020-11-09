@@ -1,4 +1,5 @@
 import Query, { whereArgs, enumCompare, enumOrder } from '../Query/Query'
+import Moment from '../../Support/Moment/Moment'
 
 export type whereParams = [string, enumCompare, any]
 export type whereIsParams = [string, any]
@@ -28,6 +29,15 @@ class Db {
 
     protected _query: Query;
 
+    protected _useTimestamps = false;
+    protected _useSoftDeletes = false;
+
+    protected _createdAtKey?: string;
+    protected _updatedAtKey?: string;
+    protected _deletedAtKey?: string;
+
+    protected _filter: null | ((data: any) => any) = null;
+
     public constructor(collectionName?: string) {
         this._query = new Query();
 
@@ -42,6 +52,27 @@ class Db {
 
     public collection(collectionName: string) {
         this._query.setCollection(collectionName);
+
+        return this;
+    }
+
+    public useTimestamps(state = true, keys = { createdAt: 'createdAt', updatedAt: 'updatedAt' }) {
+        this._useTimestamps = state;
+        this._createdAtKey = keys.createdAt;
+        this._updatedAtKey = keys.updatedAt;
+
+        return this;
+    }
+
+    public useSoftDeletes(state = true, keys = { deletedAt: 'deletedAt' }) {
+        this._useSoftDeletes = state;
+        this._deletedAtKey = keys.deletedAt;
+
+        return this;
+    }
+
+    public setFilter(filter: (data: any) => any) {
+        this._filter = filter;
 
         return this;
     }
@@ -123,11 +154,19 @@ class Db {
     public async get(): Promise<(any[]|null)> {
         const data = await this._query.get();
 
+        if (typeof this._filter === 'function' && Array.isArray(data)) {
+            return data.map(this._filter);
+        }
+
         return data;
     }
 
     public async first(): Promise<(any|null)> {
         const data = await this._query.first();
+
+        if (typeof this._filter === 'function') {
+            return this._filter(data);
+        }
 
         return data;
     }
@@ -135,25 +174,19 @@ class Db {
     public async newest(): Promise<(any|null)> {
         this.orderBy('id', 'ASC');
 
-        // const data = await this.query.first();
-
-        return {};
+        return this.first();
     }
 
     public async oldest(): Promise<(any|null)> {
         this.orderBy('id', 'DESC');
 
-        // const data = await this.query.first();
-
-        return {};
+        return this.first();
     }
 
     public async find(id: string|number): Promise<(any|null)> {
         this.where('id', '=', id);
 
-        const data = await this._query.first() as any;
-
-        return data;
+        return this.first();
     }
 
     public async count(): Promise<number> {
@@ -196,42 +229,47 @@ class Db {
         });
     }
 
-    public async exists() {
+    public async exists(): Promise<boolean> {
         return this._query.exists();
     }
 
-    public async insert(payload: payload): Promise<boolean> {
-        // this.query.insert(payload);
-
-        return true;
+    public async store(payload: payload): Promise<any> {
+        return this._query.store(payload);
     }
 
-    public async update(payload: payload): Promise<boolean> {
-        // this.query.update(payload);
+    public async update(payload: payload): Promise<any> {
+        if (this._useTimestamps && this._updatedAtKey) {
+            payload = {
+                [this._updatedAtKey]: Moment.now().toISO(),
+                ...payload,
+            };
+        }
 
-        return true;
+        return this._query.update(payload);
     }
 
-    public async increment(column: string, increment: number = 1): Promise<number> {
-        // this.query.increment(column, increment);
+    // public async increment(column: string, increment: number = 1): Promise<number> {
+    //     // this.query.increment(column, increment);
+    //
+    //     return 1;
+    // }
+    //
+    // public async decrement(column: string, decrement: number = 1): Promise<number> {
+    //     return this.increment(column, -decrement);
+    // }
 
-        return 1;
-    }
+    public async delete(): Promise<any | boolean> {
+        if (this._useSoftDeletes && this._deletedAtKey) {
+            const payload = { [this._deletedAtKey]: Moment.now().toISO() };
 
-    public async decrement(column: string, decrement: number = 1): Promise<number> {
-        return this.increment(column, -decrement);
-    }
+            return this._query.update(payload);
+        }
 
-    public async delete(): Promise<boolean> {
-        // this.query.delete();
-
-        return true;
+        return this._query.delete();
     }
 
     public async forceDelete(): Promise<boolean> {
-        // this.query.forceDelete();
-
-        return true;
+        return this._query.delete();
     }
 
     public async getSchema(): Promise<any> {

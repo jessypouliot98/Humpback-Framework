@@ -1,19 +1,18 @@
 import Model from '../../App/Model/Model'
 import DumpAndDie from '../../Support/DumpAndDie/DumpAndDie'
 
-class Collection extends Array<Model> {
+class Collection<T extends Model> extends Array<T> {
 
-	_modelType?: any;
+	_modelType: typeof Model;
 
-	constructor(...items: Model[]) {
+	constructor(...items: T[]) {
 		super(...items);
 
-		Object.defineProperty(this, '_modelType', {
-			value: items[0].constructor,
-			enumerable: false,
-		});
+		this._modelType = items[0].constructor as typeof Model;
 
-		if ( items.some(item => item.constructor !== this._modelType) ) {
+		Object.defineProperty(this, '_modelType', { value: this._modelType, enumerable: false });
+
+		if ( items.some(item => (item.constructor as typeof Model) !== this._modelType) ) {
 			throw new Error('A Collection may only have items from the same type');
 		}
 	}
@@ -37,17 +36,17 @@ class Collection extends Array<Model> {
 	}
 
 	public async delete() {
-		this.forEach((item: Model) => {
-			item.delete();
-		});
+		const itemIds = this.map(item => item.getKey());
+
+		this._modelType.query().where('id', 'in', itemIds).delete();
 
 		return this;
 	}
 
 	public async forceDelete() {
-		this.forEach((item: Model) => {
-			item.forceDelete();
-		});
+		const itemIds = this.map(item => item.getKey());
+
+		this._modelType.query().where('id', 'in', itemIds).forceDelete();
 
 		return this;
 	}
