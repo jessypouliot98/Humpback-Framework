@@ -4,9 +4,11 @@ import { Request as ExpressRequest } from 'express'
 class Request {
 
 	protected _raw?: ExpressRequest;
+
 	public headers: any = {};
 	public params: any = {};
 	public body: any = {};
+	public url?: string;
 
 	constructor(request: ExpressRequest | null){
 		if(!request){
@@ -21,6 +23,8 @@ class Request {
 		this.headers = request.headers;
 		this.params = request.params;
 		this.body = request.body;
+
+		this.url = request.originalUrl;
 	}
 
 	public static get current(): Request {

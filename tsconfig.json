@@ -32,7 +32,6 @@
 		"lib"
 	],
 	"include": [
-		"src",
-		"cli"
+		"src/*"
 	]
 }

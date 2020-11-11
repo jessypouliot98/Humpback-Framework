@@ -2,7 +2,6 @@ import express, { Request as ExpressRequest, Response as ExpressResponse } from 
 import Request from '../Request/Request'
 import Response from '../Response/Response'
 import NoSuchMethodException from '../../Exception/NoSuchMethodException/NoSuchMethodException'
-import DumpAndDie from '../../Support/DumpAndDie/DumpAndDie'
 
 export type enumServeMethods = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
@@ -13,37 +12,28 @@ class Route {
 	protected serve(method: enumServeMethods, route: string, delegate: any): any {
 		return this.router[method](route, async(req: ExpressRequest) => {
 			Request.set(req);
-			try{
-				let data: any;
 
-				if( Array.isArray(delegate) && delegate.length === 2 ){
-					const [controller, func] = delegate;
+			let data: any;
 
-					const conrollerInstance = new controller();
+			if( Array.isArray(delegate) && delegate.length === 2 ){
+				const [controller, func] = delegate;
 
-					if( typeof conrollerInstance[func] !== 'function' ) {
-						throw NoSuchMethodException.routeDelegate();
-					}
+				const conrollerInstance = new controller();
 
-					data = await conrollerInstance[func](Request.current);
-				}
-				else if( typeof delegate === 'function' ){
-					data = await delegate(Request.current);
-				}
-				else {
+				if( typeof conrollerInstance[func] !== 'function' ) {
 					throw NoSuchMethodException.routeDelegate();
 				}
 
-				Response.send(data);
-			} catch(e){
-				if (e instanceof DumpAndDie) {
-					Response.send(e.content);
-					return;
-				}
-
-				console.error(e)
-				Response.send(e);
+				data = await conrollerInstance[func](Request.current);
 			}
+			else if( typeof delegate === 'function' ){
+				data = await delegate(Request.current);
+			}
+			else {
+				throw NoSuchMethodException.routeDelegate();
+			}
+
+			Response.send(data);
 		})
 	}
 
@@ -117,7 +107,7 @@ class Route {
 		return this.use(a, b);
 	}
 
-	public static middleware(a: any, b: any): any {
+	public static middleware(a: any, b?: any): any {
 		return new this().use(a, b);
 	}
 

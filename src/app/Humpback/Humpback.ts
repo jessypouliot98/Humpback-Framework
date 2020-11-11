@@ -45,14 +45,14 @@ class Humpback {
 
 	protected setupMiddlewares() {
 		this._app.options('*', cors());
-		this._app.use((req, res, next) => {
+		this._app.use((_req, res, next) => {
 			res.header("Access-Control-Allow-Origin", "*");
 			res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 			next();
 		});
 		this._app.use( bodyParser.urlencoded({ extended: false }) );
 		this._app.use( bodyParser.json() );
-		this._app.use( HumpbackHttp.setup );
+		this._app.use( HumpbackHttp.setup() );
 	}
 
 	public attachRoute(route: Route) {
@@ -66,15 +66,19 @@ class Humpback {
 	}
 
 	public setViewEngine(
-		viewEngine: viewEngines|null = viewEngines.null,
+		viewEngine: viewEngines = 'none',
 		viewDirectory: string = path.join(process.cwd(), '/resources/views')
 	) {
-		if (!viewEngine || viewEngine === viewEngines.null) {
+		if (!viewEngine || viewEngine === 'none') {
 			return;
 		}
 
 		this._app.set('views', viewDirectory);
 		this._app.set('view engine', viewEngine);
+	}
+
+	public getApp() {
+		return this._app;
 	}
 
 }
