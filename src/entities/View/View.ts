@@ -25,8 +25,11 @@ class View extends String {
 	}
 
 	public static scriptSrc(src: string) {
-		console.log(src)
 		return `<script src="${src}" defer></script>`;
+	}
+
+	public static linkCSS(src: string) {
+		return `<link rel="stylesheet" href="${src}">`;
 	}
 
 	public static scriptData(payload: any, scope: string = VIEW_INITIAL_DATA) {
