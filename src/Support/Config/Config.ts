@@ -69,9 +69,12 @@ class Config {
 	}
 
 	public static get mode() {
+		const ENV = env.ENV || 'dev';
+
 		return {
-			ENV: 'dev',
-			DEBUG: true
+			ENV,
+			DEBUG: env.DEBUG || false,
+			isProduction: () => ['prod', 'production'].includes(ENV),
 		}
 	}
 
